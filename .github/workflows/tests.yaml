@@ -8,7 +8,8 @@ on:
 
 env:
     fail-fast: true
-    PHPUNIT_FLAGS: "-v"
+    # PHPUnit 11 removed the "-v" flag, so keep this empty.
+    PHPUNIT_FLAGS: ""
     SYMFONY_PHPUNIT_DIR: "$HOME/symfony-bridge/.phpunit"
     SYMFONY_DEPRECATIONS_HELPER: 'max[indirect]=52'
 
