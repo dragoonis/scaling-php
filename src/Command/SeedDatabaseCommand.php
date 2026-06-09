@@ -1,15 +1,21 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Command;
 
 use App\Entity\Customer;
 use App\Entity\Order;
 use App\Entity\Product;
-use App\Repository\CustomerRepository;
-use App\Repository\OrderRepository;
 use App\Projection\CustomerProjectionService;
 use App\Projection\OrderProjectionService;
-use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Faker\Factory;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -27,7 +33,7 @@ final class SeedDatabaseCommand extends Command
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly CustomerProjectionService $customerProjectionService,
-        private readonly OrderProjectionService $orderProjectionService
+        private readonly OrderProjectionService $orderProjectionService,
     ) {
         parent::__construct();
     }
@@ -49,7 +55,7 @@ final class SeedDatabaseCommand extends Command
         // Create Products
         $io->section('Creating 10,000 products...');
         $products = [];
-        for ($i = 0; $i < 10000; $i++) {
+        for ($i = 0; $i < 10000; ++$i) {
             $product = new Product();
             $product->setName($faker->words(3, true));
             $product->setDescription($faker->paragraph());
@@ -61,7 +67,7 @@ final class SeedDatabaseCommand extends Command
 
             if (($i + 1) % 100 === 0) {
                 $this->entityManager->flush();
-                $io->text("Created " . ($i + 1) . " products");
+                $io->text('Created '.($i + 1).' products');
             }
         }
         $this->entityManager->flush();
@@ -70,7 +76,7 @@ final class SeedDatabaseCommand extends Command
         // Create Customers
         $io->section('Creating 5,000 customers...');
         $customers = [];
-        for ($i = 0; $i < 5000; $i++) {
+        for ($i = 0; $i < 5000; ++$i) {
             $customer = new Customer();
             $customer->setName($faker->name());
             $customer->setEmail($faker->unique()->safeEmail());
@@ -85,7 +91,7 @@ final class SeedDatabaseCommand extends Command
 
             if (($i + 1) % 1000 === 0) {
                 $this->entityManager->flush();
-                $io->text("Created " . ($i + 1) . " customers");
+                $io->text('Created '.($i + 1).' customers');
             }
         }
         $this->entityManager->flush();
@@ -94,15 +100,15 @@ final class SeedDatabaseCommand extends Command
         // Create Orders (2 per customer)
         $io->section('Creating 20,000 orders (2 per customer)...');
         $orderStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
-        
-        for ($i = 0; $i < 5000; $i++) {
+
+        for ($i = 0; $i < 5000; ++$i) {
             $customer = $customers[$i];
-            
+
             // Create 2 orders per customer
-            for ($j = 0; $j < 2; $j++) {
+            for ($j = 0; $j < 2; ++$j) {
                 $order = new Order();
                 $order->setCustomer($customer);
-                $order->setOrderNumber('ORD-' . str_pad($i * 2 + $j + 1, 6, '0', STR_PAD_LEFT));
+                $order->setOrderNumber('ORD-'.mb_str_pad($i * 2 + $j + 1, 6, '0', \STR_PAD_LEFT));
                 $order->setStatus($faker->randomElement($orderStatuses));
                 $order->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-6 months', 'now')));
 
@@ -110,23 +116,23 @@ final class SeedDatabaseCommand extends Command
                 $orderItems = [];
                 $totalAmount = 0;
                 $numItems = $faker->numberBetween(1, 5);
-                
-                for ($k = 0; $k < $numItems; $k++) {
+
+                for ($k = 0; $k < $numItems; ++$k) {
                     $product = $faker->randomElement($products);
                     $quantity = $faker->numberBetween(1, 5);
                     $price = $product->getPrice();
                     $itemTotal = $price * $quantity;
                     $totalAmount += $itemTotal;
-                    
+
                     $orderItems[] = [
                         'product_id' => $product->getId(),
                         'product_name' => $product->getName(),
                         'quantity' => $quantity,
                         'price' => $price,
-                        'total' => $itemTotal
+                        'total' => $itemTotal,
                     ];
                 }
-                
+
                 $order->setItems($orderItems);
                 $order->setTotalAmount(number_format($totalAmount, 2, '.', ''));
 
@@ -135,7 +141,7 @@ final class SeedDatabaseCommand extends Command
 
             if (($i + 1) % 1000 === 0) {
                 $this->entityManager->flush();
-                $io->text("Created " . (($i + 1) * 2) . " orders");
+                $io->text('Created '.(($i + 1) * 2).' orders');
             }
         }
         $this->entityManager->flush();
@@ -156,4 +162,4 @@ final class SeedDatabaseCommand extends Command
 
         return Command::SUCCESS;
     }
-} 
+}

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Controller;
 
 use App\Command\AddOrderCommand;
@@ -19,15 +28,17 @@ final class OrderController extends AbstractController
 {
     public function __construct(
         private readonly MessageBusInterface $commandBus,
-        private readonly OrderRepository $orderRepository
-    ) {}
+        private readonly OrderRepository $orderRepository,
+    ) {
+    }
 
     #[Route('/db', name: 'list_orders_db', methods: ['GET'])]
     public function listOrdersDb(): JsonResponse
     {
         $orders = $this->orderRepository->findAll();
+
         return $this->json([
-            'orders' => array_map(function($o) {
+            'orders' => array_map(static function ($o) {
                 return [
                     'id' => $o->getId(),
                     'customer_id' => $o->getCustomer()?->getId(),
@@ -36,10 +47,10 @@ final class OrderController extends AbstractController
                     'total_amount' => $o->getTotalAmount(),
                     'status' => $o->getStatus(),
                     'items' => $o->getItems(),
-                    'created_at' => $o->getCreatedAt()?->format(DATE_ATOM),
+                    'created_at' => $o->getCreatedAt()?->format(\DATE_ATOM),
                 ];
             }, $orders),
-            'total' => count($orders)
+            'total' => \count($orders),
         ]);
     }
 
@@ -48,9 +59,10 @@ final class OrderController extends AbstractController
     {
         $envelope = $this->commandBus->dispatch(new ListOrdersCommand());
         $projections = $envelope->last(HandledStamp::class)->getResult();
+
         return $this->json([
-            'orders' => array_map(fn($p) => $p->toArray(), $projections),
-            'total' => count($projections)
+            'orders' => array_map(static fn ($p) => $p->toArray(), $projections),
+            'total' => \count($projections),
         ]);
     }
 
@@ -68,6 +80,7 @@ final class OrderController extends AbstractController
             isset($data['created_at']) ? new \DateTimeImmutable($data['created_at']) : new \DateTimeImmutable('now')
         );
         $this->commandBus->dispatch($command);
+
         return $this->json(['message' => 'Order created successfully'], 201);
     }
 
@@ -78,6 +91,7 @@ final class OrderController extends AbstractController
         if (!$order) {
             return $this->json(['error' => 'Order not found'], 404);
         }
+
         return $this->json([
             'order' => [
                 'id' => $order->getId(),
@@ -87,8 +101,8 @@ final class OrderController extends AbstractController
                 'total_amount' => $order->getTotalAmount(),
                 'status' => $order->getStatus(),
                 'items' => $order->getItems(),
-                'created_at' => $order->getCreatedAt()?->format(DATE_ATOM),
-            ]
+                'created_at' => $order->getCreatedAt()?->format(\DATE_ATOM),
+            ],
         ]);
     }
 
@@ -100,6 +114,7 @@ final class OrderController extends AbstractController
         if (!$order) {
             return $this->json(['error' => 'Order not found'], 404);
         }
+
         return $this->json(['order' => $order]);
     }
 
@@ -108,6 +123,7 @@ final class OrderController extends AbstractController
     {
         $command = new DeleteOrderCommand($id);
         $this->commandBus->dispatch($command);
+
         return $this->json(['message' => 'Order deleted successfully']);
     }
-} 
+}

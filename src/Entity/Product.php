@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -37,6 +46,7 @@ class Product
     public function setName(string $name): self
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -48,6 +58,7 @@ class Product
     public function setDescription(string $description): self
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -59,6 +70,7 @@ class Product
     public function setPrice(string $price): self
     {
         $this->price = $price;
+
         return $this;
     }
 
@@ -70,6 +82,7 @@ class Product
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
-} 
+}

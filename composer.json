@@ -1,4 +1,6 @@
 {
+    "name": "dragoonis/scaling-php",
+    "description": "Scaling PHP demo project showcasing CQRS, projections, and deployment topologies with Symfony.",
     "license": "proprietary",
     "type": "project",
     "minimum-stability": "stable",
@@ -19,8 +21,8 @@
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/orm": "^3.0",
         "league/commonmark": "^2.1",
-        "predis/predis": "*",
-        "runtime/frankenphp-symfony": "*",
+        "predis/predis": "^3.3",
+        "runtime/frankenphp-symfony": "^0.2",
         "symfony/apache-pack": "^1.0",
         "symfony/asset": "7.3.*",
         "symfony/asset-mapper": "7.3.*",

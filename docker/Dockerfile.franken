@@ -1,4 +1,4 @@
-FROM dunglas/frankenphp:php8.4-bookworm
+FROM dunglas/frankenphp:1.12.4-php8.4-bookworm
 
 WORKDIR /var/www/html
 
@@ -6,7 +6,8 @@ RUN install-php-extensions \
 	gd \
 	intl \
 	zip \
-	opcache
+	opcache \
+	pdo_mysql
 
 COPY --chown=www-data:www-data ./docker/symfony.prod.ini $PHP_INI_DIR/php.ini
 

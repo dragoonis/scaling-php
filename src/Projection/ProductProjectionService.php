@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Projection;
 
 use App\Entity\Product;
@@ -8,11 +17,10 @@ use App\Repository\ProductRepository;
 final readonly class ProductProjectionService
 {
     public function __construct(
-        private ProductRepository           $productRepository,
+        private ProductRepository $productRepository,
         private ProductProjectionRepository $projectionRepository,
-        private ProductProjectionBuilder    $projectionBuilder
-    )
-    {
+        private ProductProjectionBuilder $projectionBuilder,
+    ) {
     }
 
     public function rebuildAll(): void
@@ -37,4 +45,4 @@ final readonly class ProductProjectionService
     {
         $this->projectionRepository->delete($id);
     }
-} 
+}

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Entity;
 
 use App\Repository\CustomerRepository;
@@ -52,6 +61,7 @@ class Customer
     public function setName(string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -63,6 +73,7 @@ class Customer
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
         return $this;
     }
 
@@ -74,6 +85,7 @@ class Customer
     public function setAddress(string $address): static
     {
         $this->address = $address;
+
         return $this;
     }
 
@@ -85,6 +97,7 @@ class Customer
     public function setCity(string $city): static
     {
         $this->city = $city;
+
         return $this;
     }
 
@@ -96,6 +109,7 @@ class Customer
     public function setPostalCode(string $postalCode): static
     {
         $this->postalCode = $postalCode;
+
         return $this;
     }
 
@@ -107,6 +121,7 @@ class Customer
     public function setCountry(string $country): static
     {
         $this->country = $country;
+
         return $this;
     }
 
@@ -118,6 +133,7 @@ class Customer
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
-} 
+}

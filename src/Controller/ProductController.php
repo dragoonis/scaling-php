@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Controller;
 
 use App\Command\AddProductCommand;
@@ -7,21 +16,20 @@ use App\Command\DeleteProductCommand;
 use App\Command\GetProductCommand;
 use App\Command\ListProductsCommand;
 use App\Command\UpdateProductCommand;
+use App\Repository\ProductRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Repository\ProductRepository;
 
 #[Route('/products')]
 final class ProductController extends AbstractController
 {
     public function __construct(
         private readonly MessageBusInterface $commandBus,
-    )
-    {
+    ) {
     }
 
     #[Route('/projection', name: 'list_products_redis', methods: ['GET'])]
@@ -29,9 +37,10 @@ final class ProductController extends AbstractController
     {
         $envelope = $this->commandBus->dispatch(new ListProductsCommand());
         $projections = $envelope->last(HandledStamp::class)->getResult();
+
         return $this->json([
-            'products' => array_map(fn($product) => $product->toArray(), $projections),
-            'total' => count($projections)
+            'products' => array_map(static fn ($product) => $product->toArray(), $projections),
+            'total' => \count($projections),
         ]);
     }
 
@@ -46,6 +55,7 @@ final class ProductController extends AbstractController
             new \DateTimeImmutable($data['created_at'] ?? 'now')
         );
         $this->commandBus->dispatch($command);
+
         return $this->json(['message' => 'Product created successfully'], 201);
     }
 
@@ -57,6 +67,7 @@ final class ProductController extends AbstractController
         if (!$product) {
             return $this->json(['error' => 'Product not found'], 404);
         }
+
         return $this->json(['product' => $product]);
     }
 
@@ -65,6 +76,7 @@ final class ProductController extends AbstractController
     {
         $command = new DeleteProductCommand($id);
         $this->commandBus->dispatch($command);
+
         return $this->json(['message' => 'Product deleted successfully']);
     }
 
@@ -80,6 +92,7 @@ final class ProductController extends AbstractController
             isset($data['created_at']) ? new \DateTimeImmutable($data['created_at']) : null
         );
         $this->commandBus->dispatch($command);
+
         return $this->json(['message' => 'Product updated successfully']);
     }
 
@@ -87,17 +100,18 @@ final class ProductController extends AbstractController
     public function listProductsDb(ProductRepository $productRepository): JsonResponse
     {
         $products = $productRepository->findAll();
+
         return $this->json([
-            'products' => array_map(function ($p) {
+            'products' => array_map(static function ($p) {
                 return [
                     'id' => $p->getId(),
                     'name' => $p->getName(),
                     'description' => $p->getDescription(),
                     'price' => $p->getPrice(),
-                    'created_at' => $p->getCreatedAt()?->format(DATE_ATOM),
+                    'created_at' => $p->getCreatedAt()?->format(\DATE_ATOM),
                 ];
             }, $products),
-            'total' => count($products)
+            'total' => \count($products),
         ]);
     }
 
@@ -108,14 +122,15 @@ final class ProductController extends AbstractController
         if (!$product) {
             return $this->json(['error' => 'Product not found'], 404);
         }
+
         return $this->json([
             'product' => [
                 'id' => $product->getId(),
                 'name' => $product->getName(),
                 'description' => $product->getDescription(),
                 'price' => $product->getPrice(),
-                'created_at' => $product->getCreatedAt()?->format(DATE_ATOM),
-            ]
+                'created_at' => $product->getCreatedAt()?->format(\DATE_ATOM),
+            ],
         ]);
     }
 }

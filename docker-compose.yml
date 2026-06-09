@@ -11,6 +11,9 @@ services:
     volumes:
       - .:/var/www/html
       - ./docker/fpm.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
+    depends_on:
+      database:
+        condition: service_healthy
     networks:
       - app-net
 
@@ -29,6 +32,9 @@ services:
       - .env
     environment:
       SERVER_NAME: ":80"
+    depends_on:
+      database:
+        condition: service_healthy
     networks:
       - app-net
 
@@ -50,6 +56,9 @@ services:
     environment:
       APP_RUNTIME: "Runtime\\FrankenPhpSymfony\\Runtime"
       SERVER_NAME: ":80"
+    depends_on:
+      database:
+        condition: service_healthy
     networks:
       - app-net
 
@@ -112,9 +121,29 @@ services:
     networks:
       - app-net
 
+  database:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+      MYSQL_ROOT_PASSWORD: app
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-papp"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - app-net
+
 volumes:
   caddy_data:
   caddy_config:
+  db_data:
 
 networks:
   app-net:

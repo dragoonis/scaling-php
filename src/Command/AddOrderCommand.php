@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Command;
 
 readonly class AddOrderCommand
@@ -10,8 +19,9 @@ readonly class AddOrderCommand
         public string $totalAmount,
         public string $status,
         public array $items,
-        public \DateTimeImmutable $createdAt
-    ) {}
+        public \DateTimeImmutable $createdAt,
+    ) {
+    }
 
     public function getCustomerId(): int
     {
@@ -42,4 +52,4 @@ readonly class AddOrderCommand
     {
         return $this->createdAt;
     }
-} 
+}

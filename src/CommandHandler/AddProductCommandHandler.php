@@ -1,24 +1,32 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\CommandHandler;
 
 use App\Command\AddProductCommand;
 use App\Entity\Product;
-use App\Repository\ProductRepository;
-use App\Service\ProductSummaryProjectionService;
 use App\Projection\ProductProjectionService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
 final readonly class AddProductCommandHandler
 {
     public function __construct(
-        private ProductProjectionService        $productProjectionService,
-        private EntityManagerInterface          $entityManager,
-        private LoggerInterface                 $logger
-    ) {}
+        private ProductProjectionService $productProjectionService,
+        private EntityManagerInterface $entityManager,
+        private LoggerInterface $logger,
+    ) {
+    }
 
     public function __invoke(AddProductCommand $command): void
     {
@@ -46,4 +54,4 @@ final readonly class AddProductCommandHandler
             throw $e;
         }
     }
-} 
+}

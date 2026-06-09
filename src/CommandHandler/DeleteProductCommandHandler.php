@@ -1,13 +1,22 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\CommandHandler;
 
 use App\Command\DeleteProductCommand;
 use App\Projection\ProductProjectionRepository;
 use App\Projection\ProductSummaryProjectionRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
 final readonly class DeleteProductCommandHandler
@@ -16,8 +25,9 @@ final readonly class DeleteProductCommandHandler
         private ProductProjectionRepository $projectionRepository,
         private ProductSummaryProjectionRepository $summaryProjectionRepository,
         private EntityManagerInterface $entityManager,
-        private LoggerInterface $logger
-    ) {}
+        private LoggerInterface $logger,
+    ) {
+    }
 
     public function __invoke(DeleteProductCommand $command): void
     {
@@ -32,7 +42,7 @@ final readonly class DeleteProductCommandHandler
             }
 
             $this->projectionRepository->delete($command->productId);
-//            $this->summaryProjectionRepository->remove($command->productId);
+            //            $this->summaryProjectionRepository->remove($command->productId);
 
             $this->entityManager->commit();
         } catch (\Throwable $e) {
@@ -44,4 +54,4 @@ final readonly class DeleteProductCommandHandler
             throw $e;
         }
     }
-} 
+}

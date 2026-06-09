@@ -44,11 +44,11 @@ final class UserControllerTest extends WebTestCase
         $this->assertResponseRedirects(
             'http://localhost/en/login',
             Response::HTTP_FOUND,
-            sprintf('The %s secure URL redirects to the login form.', $url)
+            \sprintf('The %s secure URL redirects to the login form.', $url)
         );
     }
 
-    public function getUrlsForAnonymousUsers(): \Generator
+    public static function getUrlsForAnonymousUsers(): \Generator
     {
         yield ['GET', '/en/profile/edit'];
         yield ['GET', '/en/profile/change-password'];

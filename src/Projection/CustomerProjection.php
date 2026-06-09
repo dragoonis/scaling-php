@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Projection;
 
 readonly class CustomerProjection
@@ -12,8 +21,9 @@ readonly class CustomerProjection
         public string $city,
         public string $postalCode,
         public string $country,
-        public \DateTimeImmutable $createdAt
-    ) {}
+        public \DateTimeImmutable $createdAt,
+    ) {
+    }
 
     public function toArray(): array
     {
@@ -28,4 +38,4 @@ readonly class CustomerProjection
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
         ];
     }
-} 
+}

@@ -67,7 +67,7 @@ class BlogControllerTest extends WebTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
-    public function getUrlsForRegularUsers(): \Generator
+    public static function getUrlsForRegularUsers(): \Generator
     {
         yield ['GET', '/en/admin/post/'];
         yield ['GET', '/en/admin/post/1'];

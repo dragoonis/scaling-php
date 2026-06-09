@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Projection;
 
 readonly class ProductProjection
@@ -9,8 +18,9 @@ readonly class ProductProjection
         public string $name,
         public string $description,
         public float $price,
-        public \DateTimeImmutable $createdAt
-    ) {}
+        public \DateTimeImmutable $createdAt,
+    ) {
+    }
 
     public function toArray(): array
     {
@@ -22,4 +32,4 @@ readonly class ProductProjection
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
         ];
     }
-} 
+}

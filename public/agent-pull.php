@@ -1,18 +1,15 @@
 <?php
 
-/**
- * Tool for managing OPcache.
+/*
+ * This file is part of the Symfony package.
  *
- * Works in pull mode when data pulls by server from observable nodes, so this this
- * script must be placed somewhere on observable node for accessing through web.
+ * (c) Fabien Potencier <fabien@symfony.com>
  *
- * @see https://github.com/GoMetric/opcache-dashboard
- *
- * MIT License
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
-declare(strict_types=1);
 
-/**
+/*
  * Check opcache extension configured
  */
 if (!function_exists('opcache_get_status')) {
@@ -20,18 +17,19 @@ if (!function_exists('opcache_get_status')) {
         500,
         ['error' => 'Opcache extension not loaded']
     );
+
     return;
 }
 
 /**
- * Router
+ * Router.
  */
-$command = (string) filter_input(INPUT_GET, 'command');
+$command = (string) filter_input(\INPUT_GET, 'command');
 switch ($command) {
     case '':
     case 'status':
-        $pretty = (bool) filter_input(INPUT_GET, 'pretty');
-        $scripts = (bool) filter_input(INPUT_GET, 'scripts');
+        $pretty = (bool) filter_input(\INPUT_GET, 'pretty');
+        $scripts = (bool) filter_input(\INPUT_GET, 'scripts');
         statusCommand($pretty, $scripts);
         break;
 
@@ -40,7 +38,7 @@ switch ($command) {
         break;
 
     case 'invalidate':
-        $scriptPath = (string) filter_input(INPUT_GET, 'script');
+        $scriptPath = (string) filter_input(\INPUT_GET, 'script');
         invalidateCommand($scriptPath);
         break;
 
@@ -50,7 +48,7 @@ switch ($command) {
 }
 
 /**
- * Complete reset of opcache
+ * Complete reset of opcache.
  */
 function resetCommand(): void
 {
@@ -60,17 +58,19 @@ function resetCommand(): void
 }
 
 /**
- * Invalidate command invalidates passed script in OPcache
+ * Invalidate command invalidates passed script in OPcache.
  */
 function invalidateCommand(string $scriptPath): void
 {
     if (empty($scriptPath)) {
         sendResponse(400, ['error' => 'Script not defined']);
+
         return;
     }
 
     if (!file_exists($scriptPath)) {
         sendResponse(404, ['error' => 'Script not found']);
+
         return;
     }
 
@@ -80,7 +80,7 @@ function invalidateCommand(string $scriptPath): void
 }
 
 /**
- * Status command return status of OPcache
+ * Status command return status of OPcache.
  */
 function statusCommand(bool $pretty, bool $scripts): void
 {
@@ -103,7 +103,7 @@ function sendResponse(int $code, array $body, bool $pretty = false): void
     $jsonEncodeFlags = 0;
 
     if ($pretty) {
-        $jsonEncodeFlags |= JSON_PRETTY_PRINT;
+        $jsonEncodeFlags |= \JSON_PRETTY_PRINT;
     }
 
     echo json_encode(

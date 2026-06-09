@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Projection;
 
 use Doctrine\DBAL\Connection;
@@ -7,8 +16,9 @@ use Doctrine\DBAL\Connection;
 final readonly class ProductSummaryProjectionBuilder
 {
     public function __construct(
-        private Connection $connection
-    ) {}
+        private Connection $connection,
+    ) {
+    }
 
     public function buildForProduct(int $productId): ?ProductSummaryProjection
     {
@@ -16,6 +26,7 @@ final readonly class ProductSummaryProjectionBuilder
         if (!$data) {
             return null;
         }
+
         return new ProductSummaryProjection(
             productId: (int) $data['id'],
             name: $data['name'],
@@ -32,7 +43,8 @@ final readonly class ProductSummaryProjectionBuilder
 
     private function getProductSummaryData(int $productId): ?array
     {
-        $sql = "SELECT id, name, description, price, created_at FROM product WHERE id = :productId";
+        $sql = 'SELECT id, name, description, price, created_at FROM product WHERE id = :productId';
+
         return $this->connection->fetchAssociative($sql, ['productId' => $productId]) ?: null;
     }
-} 
+}

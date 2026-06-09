@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Command;
 
 readonly class AddCustomerCommand
@@ -11,8 +20,9 @@ readonly class AddCustomerCommand
         public string $city,
         public string $postalCode,
         public string $country,
-        public \DateTimeImmutable $createdAt
-    ) {}
+        public \DateTimeImmutable $createdAt,
+    ) {
+    }
 
     public function getName(): string
     {
@@ -48,4 +58,4 @@ readonly class AddCustomerCommand
     {
         return $this->createdAt;
     }
-} 
+}

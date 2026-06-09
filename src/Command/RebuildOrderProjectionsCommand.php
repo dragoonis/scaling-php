@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Command;
 
 use App\Projection\OrderProjectionService;
@@ -16,7 +25,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class RebuildOrderProjectionsCommand extends Command
 {
     public function __construct(
-        private readonly OrderProjectionService $projectionService
+        private readonly OrderProjectionService $projectionService,
     ) {
         parent::__construct();
     }
@@ -34,4 +43,4 @@ final class RebuildOrderProjectionsCommand extends Command
 
         return Command::SUCCESS;
     }
-} 
+}

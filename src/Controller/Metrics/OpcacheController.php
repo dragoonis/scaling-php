@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Controller\Metrics;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -11,19 +20,21 @@ class OpcacheController
     #[Route('/opcache-stats', name: 'opcache_stats', methods: ['GET'])]
     public function stats(): JsonResponse
     {
-        if (function_exists('opcache_get_status')) {
+        if (\function_exists('opcache_get_status')) {
             $status = opcache_get_status(false);
+
             return new JsonResponse($status);
-        } else {
-            return new JsonResponse(['error' => 'OPcache is not enabled or available.'], 500);
         }
+
+        return new JsonResponse(['error' => 'OPcache is not enabled or available.'], 500);
     }
 
     #[Route('/metrics', name: 'prometheus_metrics', methods: ['GET'])]
     public function prometheusMetrics(): Response
     {
-        if (!function_exists('opcache_get_status')) {
+        if (!\function_exists('opcache_get_status')) {
             $content = "# OPcache is not enabled or available\n";
+
             return new Response($content, 200, ['Content-Type' => 'text/plain']);
         }
 
@@ -31,11 +42,12 @@ class OpcacheController
         $config = opcache_get_configuration();
 
         // Check if OPcache is actually enabled and working
-        if ($status === false || $config === false) {
+        if (false === $status || false === $config) {
             $content = "# OPcache is not enabled or not working properly\n";
             $content .= "# HELP opcache_enabled OPcache enabled status\n";
             $content .= "# TYPE opcache_enabled gauge\n";
             $content .= "opcache_enabled 0\n";
+
             return new Response($content, 200, ['Content-Type' => 'text/plain; version=0.0.4']);
         }
 
@@ -74,7 +86,7 @@ class OpcacheController
         );
 
         // Memory usage metrics
-        if (isset($status['memory_usage']) && is_array($status['memory_usage'])) {
+        if (isset($status['memory_usage']) && \is_array($status['memory_usage'])) {
             $memory = $status['memory_usage'];
 
             if (isset($memory['used_memory'])) {
@@ -115,7 +127,7 @@ class OpcacheController
         }
 
         // Interned strings metrics
-        if (isset($status['interned_strings_usage']) && is_array($status['interned_strings_usage'])) {
+        if (isset($status['interned_strings_usage']) && \is_array($status['interned_strings_usage'])) {
             $strings = $status['interned_strings_usage'];
 
             if (isset($strings['buffer_size'])) {
@@ -156,7 +168,7 @@ class OpcacheController
         }
 
         // Statistics metrics
-        if (isset($status['opcache_statistics']) && is_array($status['opcache_statistics'])) {
+        if (isset($status['opcache_statistics']) && \is_array($status['opcache_statistics'])) {
             $stats = $status['opcache_statistics'];
 
             if (isset($stats['hits'])) {
@@ -278,7 +290,7 @@ class OpcacheController
         }
 
         // Preload statistics
-        if (isset($status['preload_statistics']) && is_array($status['preload_statistics'])) {
+        if (isset($status['preload_statistics']) && \is_array($status['preload_statistics'])) {
             $preload = $status['preload_statistics'];
 
             if (isset($preload['memory_consumption'])) {
@@ -290,18 +302,18 @@ class OpcacheController
                 );
             }
 
-            if (isset($preload['scripts']) && is_array($preload['scripts'])) {
+            if (isset($preload['scripts']) && \is_array($preload['scripts'])) {
                 $metrics[] = $this->formatMetric(
                     'opcache_preload_scripts_count',
                     'Number of preloaded scripts',
                     'gauge',
-                    count($preload['scripts'])
+                    \count($preload['scripts'])
                 );
             }
         }
 
         // JIT statistics
-        if (isset($status['jit']) && is_array($status['jit'])) {
+        if (isset($status['jit']) && \is_array($status['jit'])) {
             $jit = $status['jit'];
 
             if (isset($jit['enabled'])) {
@@ -369,7 +381,7 @@ class OpcacheController
         }
 
         // Configuration metrics
-        if (isset($config['directives']) && is_array($config['directives'])) {
+        if (isset($config['directives']) && \is_array($config['directives'])) {
             $directives = $config['directives'];
 
             if (isset($directives['opcache.memory_consumption'])) {
@@ -400,7 +412,7 @@ class OpcacheController
             }
         }
 
-        $content = implode("\n", $metrics) . "\n";
+        $content = implode("\n", $metrics)."\n";
 
         return new Response($content, 200, ['Content-Type' => 'text/plain; version=0.0.4']);
     }

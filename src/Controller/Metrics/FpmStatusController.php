@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Controller\Metrics;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -8,7 +17,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class FpmStatusController
 {
-
     #[Route('/api/fpm-status', name: 'fpm_status', methods: ['GET'])]
     public function stats(): JsonResponse
     {
@@ -19,25 +27,25 @@ class FpmStatusController
             $context = stream_context_create([
                 'http' => [
                     'timeout' => 5,
-                    'ignore_errors' => true
-                ]
+                    'ignore_errors' => true,
+                ],
             ]);
 
             $response = @file_get_contents($fpmUrl, false, $context);
 
-            if ($response === false) {
+            if (false === $response) {
                 return new JsonResponse([
                     'error' => 'Failed to fetch FPM status',
-                    'message' => 'Could not connect to FPM status endpoint'
+                    'message' => 'Could not connect to FPM status endpoint',
                 ], 500);
             }
 
             $statusData = json_decode($response, true);
 
-            if (json_last_error() !== JSON_ERROR_NONE) {
+            if (\JSON_ERROR_NONE !== json_last_error()) {
                 return new JsonResponse([
                     'error' => 'Failed to parse FPM status',
-                    'message' => json_last_error_msg()
+                    'message' => json_last_error_msg(),
                 ], 500);
             }
 
@@ -45,7 +53,7 @@ class FpmStatusController
         } catch (\Exception $e) {
             return new JsonResponse([
                 'error' => 'Failed to fetch FPM status',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -60,20 +68,20 @@ class FpmStatusController
             $context = stream_context_create([
                 'http' => [
                     'timeout' => 5,
-                    'ignore_errors' => true
-                ]
+                    'ignore_errors' => true,
+                ],
             ]);
 
             $response = @file_get_contents($fpmUrl, false, $context);
 
-            if ($response === false) {
+            if (false === $response) {
                 throw new \Exception('Could not connect to FPM status endpoint');
             }
 
             $status = json_decode($response, true);
 
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \Exception('Failed to parse FPM status: ' . json_last_error_msg());
+            if (\JSON_ERROR_NONE !== json_last_error()) {
+                throw new \Exception('Failed to parse FPM status: '.json_last_error_msg());
             }
 
             $metrics = [];
@@ -96,7 +104,7 @@ class FpmStatusController
                     'phpfpm_process_manager_type',
                     'PHP-FPM process manager type',
                     'gauge',
-                    $status['process manager'] === 'dynamic' ? 1 : ($status['process manager'] === 'static' ? 2 : 0),
+                    'dynamic' === $status['process manager'] ? 1 : ('static' === $status['process manager'] ? 2 : 0),
                     ['type' => $status['process manager'], 'pool' => $pool]
                 );
             }
@@ -234,7 +242,7 @@ class FpmStatusController
             }
 
             // Calculate aggregated metrics from process data
-            if (isset($status['processes']) && is_array($status['processes'])) {
+            if (isset($status['processes']) && \is_array($status['processes'])) {
                 $durations = [];
                 $cpuValues = [];
                 $memoryValues = [];
@@ -253,7 +261,7 @@ class FpmStatusController
 
                 // Average request duration (convert microseconds to milliseconds)
                 if (!empty($durations)) {
-                    $avgDuration = array_sum($durations) / count($durations) / 1000;
+                    $avgDuration = array_sum($durations) / \count($durations) / 1000;
                     $metrics[] = $this->formatMetric(
                         'phpfpm_request_duration_avg',
                         'Average request duration in milliseconds',
@@ -274,7 +282,7 @@ class FpmStatusController
 
                     // P95 request duration
                     sort($durations);
-                    $p95Index = (int) ceil(count($durations) * 0.95) - 1;
+                    $p95Index = (int) ceil(\count($durations) * 0.95) - 1;
                     $p95Duration = $durations[$p95Index] / 1000;
                     $metrics[] = $this->formatMetric(
                         'phpfpm_request_duration_p95',
@@ -285,7 +293,7 @@ class FpmStatusController
                     );
 
                     // P99 request duration
-                    $p99Index = (int) ceil(count($durations) * 0.99) - 1;
+                    $p99Index = (int) ceil(\count($durations) * 0.99) - 1;
                     $p99Duration = $durations[$p99Index] / 1000;
                     $metrics[] = $this->formatMetric(
                         'phpfpm_request_duration_p99',
@@ -298,7 +306,7 @@ class FpmStatusController
 
                 // Average CPU
                 if (!empty($cpuValues)) {
-                    $avgCpu = array_sum($cpuValues) / count($cpuValues);
+                    $avgCpu = array_sum($cpuValues) / \count($cpuValues);
                     $metrics[] = $this->formatMetric(
                         'phpfpm_cpu_avg',
                         'Average CPU usage percentage',
@@ -310,7 +318,7 @@ class FpmStatusController
 
                 // Average memory
                 if (!empty($memoryValues)) {
-                    $avgMemory = array_sum($memoryValues) / count($memoryValues);
+                    $avgMemory = array_sum($memoryValues) / \count($memoryValues);
                     $metrics[] = $this->formatMetric(
                         'phpfpm_memory_avg',
                         'Average memory usage in bytes',
@@ -322,18 +330,18 @@ class FpmStatusController
             }
 
             // Process details
-            if (isset($status['processes']) && is_array($status['processes'])) {
+            if (isset($status['processes']) && \is_array($status['processes'])) {
                 foreach ($status['processes'] as $process) {
                     $pid = $process['pid'] ?? 'unknown';
 
                     // Process state
                     if (isset($process['state'])) {
-                        $stateValue = match($process['state']) {
+                        $stateValue = match ($process['state']) {
                             'Idle' => 0,
                             'Running' => 1,
                             'Reading headers' => 2,
                             'Finishing' => 3,
-                            default => -1
+                            default => -1,
                         };
 
                         $metrics[] = $this->formatMetric(
@@ -391,12 +399,12 @@ class FpmStatusController
                 }
             }
 
-            $content = implode("\n", $metrics) . "\n";
+            $content = implode("\n", $metrics)."\n";
 
             return new Response($content, 200, ['Content-Type' => 'text/plain; version=0.0.4']);
         } catch (\Exception $e) {
             $content = "# Failed to fetch FPM status\n";
-            $content .= "# Error: " . $e->getMessage() . "\n";
+            $content .= '# Error: '.$e->getMessage()."\n";
             $content .= "# HELP phpfpm_up PHP-FPM status scrape success\n";
             $content .= "# TYPE phpfpm_up gauge\n";
             $content .= "phpfpm_up 0\n";

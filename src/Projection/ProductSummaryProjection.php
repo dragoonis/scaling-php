@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Projection;
 
 final readonly class ProductSummaryProjection
@@ -9,8 +18,9 @@ final readonly class ProductSummaryProjection
         public string $name,
         public string $description,
         public string $price,
-        public \DateTimeImmutable $createdAt
-    ) {}
+        public \DateTimeImmutable $createdAt,
+    ) {
+    }
 
     public function toArray(): array
     {
@@ -33,4 +43,4 @@ final readonly class ProductSummaryProjection
             new \DateTimeImmutable($data['created_at'])
         );
     }
-} 
+}

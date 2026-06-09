@@ -1,0 +1,280 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * 🔥 Scope - side-by-side live metrics for ALL THREE runtimes at once.
+ *
+ * The real Ember (https://github.com/alexandre-daubois/ember) deep-dives ONE FrankenPHP
+ * server. Scope is the companion view: it polls PHP-FPM, FrankenPHP classic, and the
+ * FrankenPHP worker together and draws glowing bars so you can watch them react to the
+ * same traffic and see how the worker dwarfs the rest.
+ *
+ *   make compare                       # inside the app container (default)
+ *   EMBER_MODE=host php bin/scope       # on your host machine (uses localhost ports)
+ *
+ * Run it in one terminal while you drive load with `make ember-load` in another.
+ *
+ * Env knobs:
+ *   EMBER_INTERVAL   seconds between polls            (default 1)
+ *   EMBER_MODE       "container" (default) or "host"  picks service names vs localhost
+ */
+
+const BAR_WIDTH = 10;
+const BAR_FILL = '▓';
+const BAR_EMPTY = '░';
+
+$interval = max(0.2, (float) (getenv('EMBER_INTERVAL') ?: 1));
+$mode = getenv('EMBER_MODE') ?: 'container';
+$once = \in_array('--once', $argv, true); // poll+draw a single frame, then exit
+
+// Where each runtime exposes its numbers. In the container we reach peers by
+// service name; on the host we go through the published ports.
+$targets = 'host' === $mode
+    ? [
+        'fpm'     => ['label' => 'FPM (8088)',     'status' => 'http://localhost:8088/fpm-status?full&json', 'opcache' => 'http://localhost:8088/opcache-stats'],
+        'franken' => ['label' => 'FRANKEN (8080)', 'metrics' => 'http://localhost:2019/metrics',             'opcache' => 'http://localhost:8080/opcache-stats'],
+        'worker'  => ['label' => 'WORKER (8081)',  'metrics' => 'http://localhost:2020/metrics',             'opcache' => 'http://localhost:8081/opcache-stats'],
+    ]
+    : [
+        'fpm'     => ['label' => 'FPM (8088)',     'status' => 'http://localhost/fpm-status?full&json',      'opcache' => 'http://localhost/opcache-stats'],
+        'franken' => ['label' => 'FRANKEN (8080)', 'metrics' => 'http://franken:2019/metrics',               'opcache' => 'http://franken/opcache-stats'],
+        'worker'  => ['label' => 'WORKER (8081)',  'metrics' => 'http://franken-worker:2019/metrics',        'opcache' => 'http://franken-worker/opcache-stats'],
+    ];
+
+// Rows we draw. Each row knows which runtimes it applies to; the rest show "-".
+$rows = [
+    'reqps'   => ['title' => 'req/sec',      'for' => ['fpm', 'franken', 'worker']],
+    'busy'    => ['title' => 'busy threads', 'for' => ['franken', 'worker']],
+    'active'  => ['title' => 'FPM active',   'for' => ['fpm']],
+    'opcache' => ['title' => 'opcache hit',  'for' => ['fpm', 'franken', 'worker']],
+];
+
+// Keep the cursor sane even if the user hits Ctrl-C.
+register_shutdown_function(static fn () => print "\033[?25h\n");
+if (\function_exists('pcntl_async_signals')) {
+    pcntl_async_signals(true);
+    pcntl_signal(\SIGINT, static function (): void { exit(0); });
+    pcntl_signal(\SIGTERM, static function (): void { exit(0); });
+}
+
+$prev = [];      // previous counter snapshots, for per-second rates
+$peak = [];      // running max per "runtime.row", so bars auto-scale to the wave
+$lastTotalReqps = 0.0;
+
+print "\033[2J\033[?25l"; // clear screen, hide cursor
+
+while (true) {
+    $now = microtime(true);
+    $data = [];
+    foreach ($targets as $key => $t) {
+        $data[$key] = poll($key, $t, $prev, $now);
+    }
+
+    render($targets, $rows, $data, $peak, $lastTotalReqps);
+
+    if ($once) {
+        break;
+    }
+
+    $lastTotalReqps = array_sum(array_map(static fn ($d) => $d['reqps'] ?? 0, $data));
+    usleep((int) ($interval * 1_000_000));
+}
+
+/**
+ * Fetch one runtime and shape its numbers. Anything unreachable comes back
+ * offline rather than blowing up the whole dashboard.
+ */
+function poll(string $key, array $t, array &$prev, float $now): array
+{
+    $out = ['online' => false, 'reqps' => 0.0, 'busy' => null, 'threads' => null, 'active' => null, 'opcache' => null];
+
+    if (isset($t['status'])) {
+        // PHP-FPM: status JSON gives us active processes + a request counter.
+        $json = http_get($t['status']);
+        if (null !== $json && ($s = json_decode($json, true)) && isset($s['active processes'])) {
+            $out['online'] = true;
+            $out['active'] = (int) $s['active processes'];
+            $out['threads'] = (int) ($s['total processes'] ?? 0);
+            $out['reqps'] = rate($key, (float) ($s['accepted conn'] ?? 0), $now, $prev);
+        }
+    }
+
+    if (isset($t['metrics'])) {
+        // FrankenPHP: Caddy/Prometheus text gives busy/total threads + a request counter.
+        $body = http_get($t['metrics']);
+        if (null !== $body) {
+            $out['online'] = true;
+            $out['busy'] = (int) prom_sum($body, 'frankenphp_busy_threads');
+            $out['threads'] = (int) prom_sum($body, 'frankenphp_total_threads');
+            $reqs = prom_sum($body, 'caddy_http_requests_total');
+            if (0.0 === $reqs) {
+                $reqs = prom_sum($body, 'caddy_http_request_duration_seconds_count');
+            }
+            $out['reqps'] = rate($key, $reqs, $now, $prev);
+        }
+    }
+
+    if (isset($t['opcache'])) {
+        $json = http_get($t['opcache']);
+        if (null !== $json && ($o = json_decode($json, true)) && isset($o['opcache_statistics']['opcache_hit_rate'])) {
+            $out['opcache'] = (float) $o['opcache_statistics']['opcache_hit_rate'];
+        }
+    }
+
+    return $out;
+}
+
+/** Per-second rate from a monotonic counter, remembering the last sample per runtime. */
+function rate(string $key, float $total, float $now, array &$prev): float
+{
+    $rps = 0.0;
+    if (isset($prev[$key])) {
+        [$pt, $pv] = $prev[$key];
+        $dt = $now - $pt;
+        if ($dt > 0 && $total >= $pv) {
+            $rps = ($total - $pv) / $dt;
+        }
+    }
+    $prev[$key] = [$now, $total];
+
+    return $rps;
+}
+
+/** Sum every Prometheus sample whose name matches $metric (ignoring labels). */
+function prom_sum(string $body, string $metric): float
+{
+    $sum = 0.0;
+    foreach (explode("\n", $body) as $line) {
+        if ('' === $line || '#' === $line[0]) {
+            continue;
+        }
+        if (preg_match('/^'.preg_quote($metric, '/').'(\{[^}]*\})?\s+([0-9.eE+-]+)/', $line, $m)) {
+            $sum += (float) $m[2];
+        }
+    }
+
+    return $sum;
+}
+
+/** Tiny, fast HTTP GET. Returns the body or null on any trouble. */
+function http_get(string $url): ?string
+{
+    $ctx = stream_context_create(['http' => [
+        'timeout' => 1.5,
+        'ignore_errors' => true,
+        'follow_location' => 1,
+    ]]);
+    $body = @file_get_contents($url, false, $ctx);
+
+    return false === $body ? null : $body;
+}
+
+/** Repaint the whole dashboard in place. */
+function render(array $targets, array $rows, array $data, array &$peak, float $lastTotalReqps): void
+{
+    $keys = array_keys($targets);
+    $colW = 19;
+    $labelW = 13;
+
+    $out = "\033[H"; // cursor home - overwrite the previous frame
+    $out .= dim('🔥 SCOPE  -  FPM vs FrankenPHP classic vs worker, live')."\n";
+    $out .= dim(str_repeat('─', $labelW + \count($keys) * $colW))."\n";
+
+    // Column headers
+    $out .= str_pad('', $labelW);
+    foreach ($keys as $key) {
+        $online = $data[$key]['online'];
+        $head = $targets[$key]['label'].($online ? '' : ' off');
+        $out .= ($online ? "\033[1m" : "\033[2m").str_pad($head, $colW)."\033[0m";
+    }
+    $out .= "\n";
+
+    foreach ($rows as $rowKey => $row) {
+        $out .= str_pad($row['title'], $labelW);
+        foreach ($keys as $key) {
+            if (!\in_array($key, $row['for'], true)) {
+                $out .= dim(str_pad('     -', $colW));
+                continue;
+            }
+            $out .= cell($rowKey, $key, $data[$key], $peak, $colW);
+        }
+        $out .= "\n";
+    }
+
+    // Footer: which way the fire is going.
+    $total = array_sum(array_map(static fn ($d) => $d['reqps'] ?? 0, $data));
+    if ($total < 5) {
+        $hint = dim('• idle - start traffic with `make ember-load`');
+    } elseif ($total > $lastTotalReqps * 1.05) {
+        $hint = "\033[38;5;208m↑ traffic ramping up...\033[0m";
+    } elseif ($total < $lastTotalReqps * 0.95) {
+        $hint = "\033[38;5;39m↓ traffic cooling down...\033[0m";
+    } else {
+        $hint = "\033[38;5;196m■ holding steady\033[0m";
+    }
+    $out .= "\n".$hint.dim('    (ctrl-c to quit)')."\033[K\n";
+
+    print $out;
+}
+
+/** Render one runtime's value for one row: a colored bar + the number. */
+function cell(string $rowKey, string $key, array $d, array &$peak, int $colW): string
+{
+    if (!$d['online']) {
+        return dim(str_pad('  offline', $colW));
+    }
+
+    [$value, $scale, $text] = measure($rowKey, $d);
+    if (null === $value) {
+        return dim(str_pad('     -', $colW));
+    }
+
+    // req/sec auto-scales to the tallest flame we've seen on this runtime so the
+    // wave stays readable; bounded rows (threads, %) use their natural ceiling.
+    if (null === $scale) {
+        $pk = $peak[$key.'.'.$rowKey] ?? 1.0;
+        $scale = $peak[$key.'.'.$rowKey] = max($pk, $value, 1.0);
+    }
+
+    $frac = $scale > 0 ? min(1.0, $value / $scale) : 0.0;
+    $filled = (int) round($frac * BAR_WIDTH);
+    $bar = str_repeat(BAR_FILL, $filled).str_repeat(BAR_EMPTY, BAR_WIDTH - $filled);
+
+    return ember($frac).$bar."\033[0m ".str_pad($text, $colW - BAR_WIDTH - 1);
+}
+
+/** Pull the right value + scale + printable text for a row out of a runtime's data. */
+function measure(string $rowKey, array $d): array
+{
+    return match ($rowKey) {
+        'reqps'   => [$d['reqps'], null, fmt($d['reqps'])],
+        'busy'    => null === $d['busy'] ? [null, 1, ''] : [(float) $d['busy'], max(1, (int) $d['threads']), $d['busy'].'/'.$d['threads']],
+        'active'  => null === $d['active'] ? [null, 1, ''] : [(float) $d['active'], max(1, (int) $d['threads']), (string) $d['active']],
+        'opcache' => null === $d['opcache'] ? [null, 1, ''] : [$d['opcache'], 100.0, number_format($d['opcache'], 1).'%'],
+        default   => [null, 1, ''],
+    };
+}
+
+/** Colour ramp: cold blue → yellow → orange → white-hot red as the bar fills. */
+function ember(float $frac): string
+{
+    $code = match (true) {
+        $frac < 0.10 => 244, // dim grey (almost idle)
+        $frac < 0.30 => 39,  // blue
+        $frac < 0.50 => 220, // yellow
+        $frac < 0.75 => 208, // orange
+        default      => 196, // red hot
+    };
+
+    return "\033[38;5;{$code}m";
+}
+
+function fmt(float $n): string
+{
+    return $n >= 1000 ? number_format($n / 1000, 1).'k' : (string) (int) round($n);
+}
+
+function dim(string $s): string
+{
+    return "\033[2m".$s."\033[0m";
+}

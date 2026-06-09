@@ -15,7 +15,7 @@ pull-docker:
 	docker pull prom/prometheus:v2.53.4
 	docker pull grafana/grafana:latest
 	docker pull hipages/php-fpm_exporter:latest
-	docker pull dunglas/frankenphp:php8.4-bookworm
+	docker pull dunglas/frankenphp:1.12.4-php8.4-bookworm
 	@echo "All Docker images pulled successfully!"
 
 # Individual Docker image pull commands
@@ -46,7 +46,7 @@ docker-exporter:
 
 docker-frankenphp:
 	@echo "Pulling FrankenPHP image..."
-	docker pull dunglas/frankenphp
+	docker pull dunglas/frankenphp:1.12.4-php8.4-bookworm
 	@echo "FrankenPHP image pulled successfully!"
 
 build:
@@ -120,8 +120,8 @@ franken-shell:
 worker-shell:
 	docker-compose exec -it franken-worker bash
 
-migrate: ## Run database migrations
-	docker-compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+migrate: ## Create/update the DB schema from entity metadata (DB-agnostic; the committed migrations are SQLite-only)
+	docker-compose exec app php bin/console doctrine:schema:update --force --complete
 
 seed: ## Seed the database with test data
 	@echo "Seeding database with test data..."
@@ -130,8 +130,38 @@ seed: ## Seed the database with test data
 
 setup: migrate seed ## Run migrations and seed database
 
+test: ## Run the unit test suite (APP_ENV=test)
+	docker-compose exec -e APP_ENV=test app php bin/phpunit
+
 clean:
 	docker-compose down -v --remove-orphans
+
+# ──────────────────────────────────────────────────────────────
+# 🔥 Ember - live FrankenPHP dashboard (see Ember.md)
+#   Ember is the tool from https://github.com/alexandre-daubois/ember
+#   Install once:  brew install alexandre-daubois/tap/ember
+# ──────────────────────────────────────────────────────────────
+# Defaults target FrankenPHP CLASSIC (:8080 / admin :2019). Classic stays rock-solid
+# under load; the worker mode can deadlock when hammered, so it's not the default for
+# the live wave. `make ember` + `make ember-load` work as a matched pair out of the box.
+EMBER_ADDR ?= http://localhost:2019
+EMBER_TARGETS ?= franken
+.PHONY: ember ember-install ember-load compare
+
+ember-install: ## 🔥 Install the Ember CLI (auto-detects macOS / Linux / Windows)
+	@bash bin/install-ember.sh
+
+ember: ## 🔥 Open the Ember dashboard (classic by default; EMBER_ADDR=...:2020 for the worker)
+	ember --addr $(EMBER_ADDR)
+
+ember-load: ## 🔥 Run the up→down→up traffic wave (classic by default; EMBER_TARGETS=worker for the worker)
+	k6 run -e EMBER_TARGETS=$(EMBER_TARGETS) k6/ember_ramp.js
+
+compare: ## 🔥 Side-by-side bars for FPM vs FrankenPHP classic vs worker (run alongside 'make compare-load')
+	docker-compose exec app php bin/scope
+
+compare-load: ## 🔥 Drive ALL THREE runtimes at once (use this with 'make compare')
+	k6 run -e EMBER_TARGETS=fpm,franken,worker k6/ember_ramp.js
 
 # Franken Worker targets
 .PHONY: k6-franken-worker-products-db
@@ -411,10 +441,17 @@ reset-and-seed:
 
 ## help: show available targets
 help:
-	@echo "GlasgowPHP CQRS Load Testing"
+	@echo "Scaling PHP - FrankenPHP demo (see README.md and Ember.md)"
 	@echo ""
 	@echo "Available targets:"
 	@echo "  help                    - Show this help message"
+	@echo ""
+	@echo "🔥 Ember live demo:"
+	@echo "  ember-install           - Install the Ember CLI (macOS / Linux / Windows)"
+	@echo "  ember                   - Open the Ember dashboard (classic by default)"
+	@echo "  ember-load              - Run the up->down->up traffic wave (classic)"
+	@echo "  compare                 - Side-by-side bars: FPM vs classic vs worker"
+	@echo "  compare-load            - Drive ALL THREE runtimes (use with 'compare')"
 	@echo "  docker                  - Pull all required Docker images"
 	@echo "  docker-redis            - Pull Redis image only"
 	@echo "  docker-php              - Pull PHP-FPM image only"
@@ -423,7 +460,7 @@ help:
 	@echo "  docker-exporter         - Pull PHP-FPM Exporter image only"
 	@echo "  docker-frankenphp       - Pull FrankenPHP image only"
 	@echo ""
-	@echo "Franken Worker (https://localhost:444):"
+	@echo "Franken Worker (http://localhost:8081):"
 	@echo "  k6-franken-worker-products    - Test products endpoint"
 	@echo "  k6-franken-worker-products-db - Test products DB endpoint"
 	@echo "  k6-franken-worker-products-redis - Test products Redis endpoint"
@@ -435,7 +472,7 @@ help:
 	@echo "  k6-franken-worker-orders-redis - Test orders Redis endpoint"
 	@echo "  k6-franken-worker-blog        - Test blog endpoint"
 	@echo ""
-	@echo "Franken (https://localhost:443):"
+	@echo "Franken (http://localhost:8080):"
 	@echo "  k6-franken-products           - Test products endpoint"
 	@echo "  k6-franken-products-db        - Test products DB endpoint"
 	@echo "  k6-franken-products-redis     - Test products Redis endpoint"

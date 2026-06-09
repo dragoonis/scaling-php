@@ -10,7 +10,10 @@
 
 {$SERVER_NAME::80} {
 	root {$SERVER_ROOT:public/}
-	encode zstd br gzip 
+	encode zstd br gzip
+
+	# Access logging - fills Ember's "Logs > Access" panel with a line per request.
+	log
 
 	{$CADDY_SERVER_EXTRA_DIRECTIVES}
 

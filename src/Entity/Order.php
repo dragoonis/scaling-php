@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Entity;
 
 use App\Repository\OrderRepository;
@@ -55,6 +64,7 @@ class Order
     public function setCustomer(?Customer $customer): static
     {
         $this->customer = $customer;
+
         return $this;
     }
 
@@ -66,6 +76,7 @@ class Order
     public function setOrderNumber(string $orderNumber): static
     {
         $this->orderNumber = $orderNumber;
+
         return $this;
     }
 
@@ -77,6 +88,7 @@ class Order
     public function setTotalAmount(string $totalAmount): static
     {
         $this->totalAmount = $totalAmount;
+
         return $this;
     }
 
@@ -88,6 +100,7 @@ class Order
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -99,12 +112,14 @@ class Order
     public function setItems(array $items): static
     {
         $this->items = $items;
+
         return $this;
     }
 
     public function addItem(array $item): static
     {
         $this->items[] = $item;
+
         return $this;
     }
 
@@ -116,6 +131,7 @@ class Order
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -127,6 +143,7 @@ class Order
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
-} 
+}

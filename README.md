@@ -1,7 +1,26 @@
-# SymfonyCon 2025 - Scaling PHP Systems
+# Scaling PHP Systems - FrankenPHP @ IPC Conference Germany
 
-This project demonstrates a scalable Symfony CQRS application with Redis and DB projections, Docker Compose, and k6 load
-testing. All common tasks are managed via the Makefile.
+A Symfony CQRS demo for exploring how modern PHP runtimes scale. The same app runs three ways - **PHP-FPM**,
+**FrankenPHP classic**, and **FrankenPHP worker** - so you can load-test them side by side with k6 and watch
+the difference live. Everything runs in Docker Compose and is driven by the Makefile.
+
+## What this demo shows
+
+- One Symfony app (Products / Customers / Orders) using **CQRS**: writes go to the database, reads come from
+  fast **Redis projections**.
+- The same app served by **three runtimes**, so you can compare them fairly:
+
+  | Runtime            | Port | What it is                                    |
+  |--------------------|------|-----------------------------------------------|
+  | PHP-FPM            | 8088 | Traditional process-per-request               |
+  | FrankenPHP classic | 8080 | Modern PHP server on Caddy                     |
+  | FrankenPHP worker  | 8081 | Long-lived workers, app kept warm in memory   |
+
+- Live metrics for all of them (FPM status, OPcache, Caddy/Prometheus) plus Grafana dashboards.
+- **🔥 [Ember](Ember.md)** - a one-command live demo that ramps traffic up and down while you watch the
+  numbers move.
+
+> Runtimes run **PHP 8.5** (FrankenPHP `1.12.4`). New here? **Start with [Ember.md](Ember.md).**
 
 ## Web Interfaces & Dashboards
 
@@ -81,6 +100,36 @@ make seed
 ```
 
 Go to http://localhost:8088
+
+## 🔥 Ember - live demo (start here)
+
+The quickest way to see what this project is about. We use **[Ember](https://github.com/alexandre-daubois/ember)**,
+a terminal dashboard for FrankenPHP, and watch it react to a wave of traffic.
+
+```bash
+# one-time: install the Ember CLI (auto-detects macOS / Linux / Windows)
+make ember-install
+
+# start the app + FrankenPHP, fill the database
+make up && make up-franken && make setup
+```
+
+```bash
+# terminal 1 - the live dashboard
+make ember
+```
+
+```bash
+# terminal 2 - send a spiky wave of traffic
+make ember-load
+```
+
+Watch RPS and busy threads climb and fall as FrankenPHP handles the wave - no flags needed, both commands
+default to the stable classic server.
+
+Want the **side-by-side** FPM vs classic vs worker race? Use `make compare` + `make compare-load`.
+
+Full beginner walkthrough (with screenshots) in **[Ember.md](Ember.md)**.
 
 ## PHP-FPM & OPcache Configuration
 

@@ -30,7 +30,7 @@ use function Symfony\Component\String\u;
 final readonly class TagArrayToStringTransformer implements DataTransformerInterface
 {
     public function __construct(
-        private TagRepository $tags
+        private TagRepository $tags,
     ) {
     }
 
@@ -86,7 +86,7 @@ final readonly class TagArrayToStringTransformer implements DataTransformerInter
         $result = [];
 
         foreach ($strings as $string) {
-            $result[] = trim($string);
+            $result[] = mb_trim($string);
         }
 
         return $result;

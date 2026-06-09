@@ -76,7 +76,7 @@ final class AddUserCommandTest extends AbstractCommandTest
      * This is used to execute the same test twice: first for normal users
      * (isAdmin = false) and then for admin users (isAdmin = true).
      */
-    public function isAdminDataProvider(): \Generator
+    public static function isAdminDataProvider(): \Generator
     {
         yield [false];
         yield [true];

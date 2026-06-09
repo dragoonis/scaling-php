@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Controller;
 
 use App\Command\AddCustomerCommand;
@@ -19,15 +28,17 @@ final class CustomerController extends AbstractController
 {
     public function __construct(
         private readonly MessageBusInterface $commandBus,
-        private readonly CustomerRepository $customerRepository
-    ) {}
+        private readonly CustomerRepository $customerRepository,
+    ) {
+    }
 
     #[Route('/db', name: 'list_customers_db', methods: ['GET'])]
     public function listCustomersDb(): JsonResponse
     {
         $customers = $this->customerRepository->findAll();
+
         return $this->json([
-            'customers' => array_map(function($c) {
+            'customers' => array_map(static function ($c) {
                 return [
                     'id' => $c->getId(),
                     'name' => $c->getName(),
@@ -36,10 +47,10 @@ final class CustomerController extends AbstractController
                     'city' => $c->getCity(),
                     'postal_code' => $c->getPostalCode(),
                     'country' => $c->getCountry(),
-                    'created_at' => $c->getCreatedAt()?->format(DATE_ATOM),
+                    'created_at' => $c->getCreatedAt()?->format(\DATE_ATOM),
                 ];
             }, $customers),
-            'total' => count($customers)
+            'total' => \count($customers),
         ]);
     }
 
@@ -48,9 +59,10 @@ final class CustomerController extends AbstractController
     {
         $envelope = $this->commandBus->dispatch(new ListCustomersCommand());
         $projections = $envelope->last(HandledStamp::class)->getResult();
+
         return $this->json([
-            'customers' => array_map(fn($p) => $p->toArray(), $projections),
-            'total' => count($projections)
+            'customers' => array_map(static fn ($p) => $p->toArray(), $projections),
+            'total' => \count($projections),
         ]);
     }
 
@@ -67,6 +79,7 @@ final class CustomerController extends AbstractController
             new \DateTimeImmutable($request->get('created_at') ?? 'now')
         );
         $this->commandBus->dispatch($command);
+
         return $this->json(['message' => 'Customer created successfully'], 201);
     }
 
@@ -77,6 +90,7 @@ final class CustomerController extends AbstractController
         if (!$customer) {
             return $this->json(['error' => 'Customer not found'], 404);
         }
+
         return $this->json([
             'customer' => [
                 'id' => $customer->getId(),
@@ -86,8 +100,8 @@ final class CustomerController extends AbstractController
                 'city' => $customer->getCity(),
                 'postal_code' => $customer->getPostalCode(),
                 'country' => $customer->getCountry(),
-                'created_at' => $customer->getCreatedAt()?->format(DATE_ATOM),
-            ]
+                'created_at' => $customer->getCreatedAt()?->format(\DATE_ATOM),
+            ],
         ]);
     }
 
@@ -99,6 +113,7 @@ final class CustomerController extends AbstractController
         if (!$customer) {
             return $this->json(['error' => 'Customer not found'], 404);
         }
+
         return $this->json(['customer' => $customer]);
     }
 
@@ -107,6 +122,7 @@ final class CustomerController extends AbstractController
     {
         $command = new DeleteCustomerCommand($id);
         $this->commandBus->dispatch($command);
+
         return $this->json(['message' => 'Customer deleted successfully']);
     }
-} 
+}

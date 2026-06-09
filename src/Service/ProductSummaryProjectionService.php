@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Service;
 
 use App\Projection\ProductSummaryProjectionBuilder;
@@ -11,8 +20,9 @@ final readonly class ProductSummaryProjectionService
     public function __construct(
         private ProductSummaryProjectionBuilder $builder,
         private ProductSummaryProjectionRepository $repository,
-        private LoggerInterface $logger
-    ) {}
+        private LoggerInterface $logger,
+    ) {
+    }
 
     public function updateProductSummary(int $productId): void
     {
@@ -22,7 +32,7 @@ final readonly class ProductSummaryProjectionService
                 $this->repository->save($projection);
                 $this->logger->info('Product projection updated', [
                     'product_id' => $productId,
-                    'projection_type' => 'ProductSummary'
+                    'projection_type' => 'ProductSummary',
                 ]);
             }
         } catch (\Throwable $e) {
@@ -40,4 +50,4 @@ final readonly class ProductSummaryProjectionService
             $this->updateProductSummary($productId);
         }
     }
-} 
+}

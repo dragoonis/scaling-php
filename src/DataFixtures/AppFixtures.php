@@ -26,7 +26,7 @@ final class AppFixtures extends Fixture
 {
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
-        private readonly SluggerInterface $slugger
+        private readonly SluggerInterface $slugger,
     ) {
     }
 
@@ -80,7 +80,7 @@ final class AppFixtures extends Fixture
 
             foreach (range(1, 5) as $i) {
                 /** @var User $commentAuthor */
-                $commentAuthor = $this->getReference('john_user');
+                $commentAuthor = $this->getReference('john_user', User::class);
 
                 $comment = new Comment();
                 $comment->setAuthor($commentAuthor);
@@ -140,7 +140,7 @@ final class AppFixtures extends Fixture
             // $postData = [$title, $slug, $summary, $content, $publishedAt, $author, $tags, $comments];
 
             /** @var User $user */
-            $user = $this->getReference(['jane_admin', 'tom_admin'][0 === $i ? 0 : random_int(0, 1)]);
+            $user = $this->getReference(['jane_admin', 'tom_admin'][0 === $i ? 0 : random_int(0, 1)], User::class);
 
             $posts[] = [
                 $title,
@@ -262,7 +262,7 @@ final class AppFixtures extends Fixture
 
         return array_map(function ($tagName) {
             /** @var Tag $tag */
-            $tag = $this->getReference('tag-'.$tagName);
+            $tag = $this->getReference('tag-'.$tagName, Tag::class);
 
             return $tag;
         }, $selectedTags);

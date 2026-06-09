@@ -40,7 +40,7 @@ final class DefaultControllerTest extends WebTestCase
         $client = static::createClient();
         $client->request('GET', $url);
 
-        $this->assertResponseIsSuccessful(sprintf('The %s public URL loads correctly.', $url));
+        $this->assertResponseIsSuccessful(\sprintf('The %s public URL loads correctly.', $url));
     }
 
     /**
@@ -61,7 +61,7 @@ final class DefaultControllerTest extends WebTestCase
         /** @var Post $blogPost */
         $blogPost = $registry->getRepository(Post::class)->find(1);
 
-        $client->request('GET', sprintf('/en/blog/posts/%s', $blogPost->getSlug()));
+        $client->request('GET', \sprintf('/en/blog/posts/%s', $blogPost->getSlug()));
         $this->assertResponseIsSuccessful();
     }
 
@@ -80,18 +80,18 @@ final class DefaultControllerTest extends WebTestCase
         $this->assertResponseRedirects(
             'http://localhost/en/login',
             Response::HTTP_FOUND,
-            sprintf('The %s secure URL redirects to the login form.', $url)
+            \sprintf('The %s secure URL redirects to the login form.', $url)
         );
     }
 
-    public function getPublicUrls(): \Generator
+    public static function getPublicUrls(): \Generator
     {
         yield ['/'];
         yield ['/en/blog/'];
         yield ['/en/login'];
     }
 
-    public function getSecureUrls(): \Generator
+    public static function getSecureUrls(): \Generator
     {
         yield ['/en/admin/post/'];
         yield ['/en/admin/post/new'];
