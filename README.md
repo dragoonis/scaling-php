@@ -20,7 +20,7 @@ the difference live. Everything runs in Docker Compose and is driven by the Make
 - **🔥 [Ember](ember.md)** - a one-command live demo that ramps traffic up and down while you watch the
   numbers move.
 
-> Runtimes run **PHP 8.5** (FrankenPHP `1.12.4`). New here? **Start with [ember.md](ember.md).**
+> Runtimes run **PHP 8.4** (FrankenPHP `1.12.4`). New here? **Start with [ember.md](ember.md).**
 
 ## Web Interfaces & Dashboards
 
