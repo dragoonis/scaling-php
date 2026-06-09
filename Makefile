@@ -146,7 +146,7 @@ clean:
 # the live wave. `make ember` + `make ember-load` work as a matched pair out of the box.
 EMBER_ADDR ?= http://localhost:2019
 EMBER_TARGETS ?= franken
-.PHONY: ember ember-install ember-load compare
+.PHONY: ember ember-install ember-load compare compare-load open urls
 
 ember-install: ## 🔥 Install the Ember CLI (auto-detects macOS / Linux / Windows)
 	@bash bin/install-ember.sh
@@ -162,6 +162,20 @@ compare: ## 🔥 Side-by-side bars for FPM vs FrankenPHP classic vs worker (run 
 
 compare-load: ## 🔥 Drive ALL THREE runtimes at once (use this with 'make compare')
 	k6 run -e EMBER_TARGETS=fpm,franken,worker k6/ember_ramp.js
+
+# Open the app in the default browser - works on macOS, Linux, WSL and Windows.
+URL ?= http://localhost:8088
+open: ## 🌐 Open the app in your default browser (macOS / Linux / WSL / Windows)
+	@bash bin/open-url.sh "$(URL)"
+
+urls: ## 🌐 Print all demo URLs (Ctrl/Cmd+click to open)
+	@echo "FPM app            http://localhost:8088"
+	@echo "FrankenPHP classic http://localhost:8080"
+	@echo "FrankenPHP worker  http://localhost:8081"
+	@echo "Products (FPM)     http://localhost:8088/en/products/db"
+	@echo "Grafana            http://localhost:3000  (symfony/symfony)"
+	@echo "Prometheus         http://localhost:9090"
+	@echo "OPcache dashboard  http://localhost:42042"
 
 # Franken Worker targets
 .PHONY: k6-franken-worker-products-db
