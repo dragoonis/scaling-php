@@ -18,6 +18,7 @@
         depend on demo blog data + templates that no longer match. Excluded so the
         runnable unit suite stays green; revisit if the demo blog UI is reinstated.
       -->
+      <exclude>tests/Command/AbstractCommandTest.php</exclude>
       <exclude>tests/Command/AddUserCommandTest.php</exclude>
       <exclude>tests/Command/ListUsersCommandTest.php</exclude>
       <exclude>tests/Controller/BlogControllerTest.php</exclude>
@@ -29,7 +30,7 @@
   <extensions>
     <!-- it begins a database transaction before every testcase and rolls it back after
              the test finished, so tests can manipulate the database without affecting other tests -->
-    <extension class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>
+    <bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>
     <!-- Run `composer require symfony/panther` before enabling this extension -->
     <!-- <extension class="Symfony\Component\Panther\ServerExtension" /> -->
   </extensions>

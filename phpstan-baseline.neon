@@ -336,16 +336,6 @@ parameters:
 			path: src/Controller/ProductController.php
 
 		-
-			message: "#^Method Doctrine\\\\Common\\\\DataFixtures\\\\AbstractFixture\\:\\:getReference\\(\\) invoked with 1 parameter, 2 required\\.$#"
-			count: 3
-			path: src/DataFixtures/AppFixtures.php
-
-		-
-			message: "#^Unable to resolve the template type T in call to method Doctrine\\\\Common\\\\DataFixtures\\\\AbstractFixture\\:\\:getReference\\(\\)$#"
-			count: 3
-			path: src/DataFixtures/AppFixtures.php
-
-		-
 			message: "#^Parameter \\#1 \\$name of method App\\\\Entity\\\\Product\\:\\:setName\\(\\) expects string, array\\|string given\\.$#"
 			count: 1
 			path: src/DataFixtures/ProductFixtures.php
