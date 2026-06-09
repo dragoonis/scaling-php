@@ -95,11 +95,15 @@ make up
 2. **Set up the database and seed data:**
 
 ```bash
-make migrate
-make seed
+make setup
 ```
 
-Go to http://localhost:8088
+Then open the app in your browser:
+
+```bash
+make open          # opens http://localhost:8088 (works on macOS, Linux, WSL, Windows)
+make urls          # or print every dashboard URL to Ctrl+click
+```
 
 ## 🔥 Ember - live demo (start here)
 
