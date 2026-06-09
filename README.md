@@ -17,10 +17,10 @@ the difference live. Everything runs in Docker Compose and is driven by the Make
   | FrankenPHP worker  | 8081 | Long-lived workers, app kept warm in memory   |
 
 - Live metrics for all of them (FPM status, OPcache, Caddy/Prometheus) plus Grafana dashboards.
-- **🔥 [Ember](Ember.md)** - a one-command live demo that ramps traffic up and down while you watch the
+- **🔥 [Ember](ember.md)** - a one-command live demo that ramps traffic up and down while you watch the
   numbers move.
 
-> Runtimes run **PHP 8.5** (FrankenPHP `1.12.4`). New here? **Start with [Ember.md](Ember.md).**
+> Runtimes run **PHP 8.5** (FrankenPHP `1.12.4`). New here? **Start with [ember.md](ember.md).**
 
 ## Web Interfaces & Dashboards
 
@@ -129,7 +129,7 @@ default to the stable classic server.
 
 Want the **side-by-side** FPM vs classic vs worker race? Use `make compare` + `make compare-load`.
 
-Full beginner walkthrough (with screenshots) in **[Ember.md](Ember.md)**.
+Full beginner walkthrough (with screenshots) in **[ember.md](ember.md)**.
 
 ## PHP-FPM & OPcache Configuration
 

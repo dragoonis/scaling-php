@@ -8,6 +8,9 @@ services:
       - "8088:80"
     env_file:
       - .env
+    environment:
+      APP_ENV: prod
+      DATABASE_URL: "mysql://app:app@database:3306/app?serverVersion=8.0&charset=utf8mb4"
     volumes:
       - .:/var/www/html
       - ./docker/fpm.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
@@ -31,6 +34,8 @@ services:
     env_file:
       - .env
     environment:
+      APP_ENV: prod
+      DATABASE_URL: "mysql://app:app@database:3306/app?serverVersion=8.0&charset=utf8mb4"
       SERVER_NAME: ":80"
     depends_on:
       database:
@@ -55,6 +60,8 @@ services:
       - .env
     environment:
       APP_RUNTIME: "Runtime\\FrankenPhpSymfony\\Runtime"
+      APP_ENV: prod
+      DATABASE_URL: "mysql://app:app@database:3306/app?serverVersion=8.0&charset=utf8mb4"
       SERVER_NAME: ":80"
     depends_on:
       database:

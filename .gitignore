@@ -28,3 +28,5 @@
 .idea/
 
 k6/report-*
+*.swp
+/.phpunit.cache/

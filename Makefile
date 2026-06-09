@@ -137,7 +137,7 @@ clean:
 	docker-compose down -v --remove-orphans
 
 # ──────────────────────────────────────────────────────────────
-# 🔥 Ember - live FrankenPHP dashboard (see Ember.md)
+# 🔥 Ember - live FrankenPHP dashboard (see ember.md)
 #   Ember is the tool from https://github.com/alexandre-daubois/ember
 #   Install once:  brew install alexandre-daubois/tap/ember
 # ──────────────────────────────────────────────────────────────
@@ -441,7 +441,7 @@ reset-and-seed:
 
 ## help: show available targets
 help:
-	@echo "Scaling PHP - FrankenPHP demo (see README.md and Ember.md)"
+	@echo "Scaling PHP - FrankenPHP demo (see README.md and ember.md)"
 	@echo ""
 	@echo "Available targets:"
 	@echo "  help                    - Show this help message"
