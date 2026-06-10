@@ -50,7 +50,7 @@ Now check the kitchen is open. Open this in your browser:
 
 - http://localhost:8081/en/products/db
 
-> 💡 On **WSL / Windows / Linux** where Ctrl+click might not open it, run `make open URL=http://localhost:8081/en/products/db`
+> 💡 On **WSL / Windows / Linux** where Ctrl+click might not open it, run `make open http://localhost:8081/en/products/db`
 > (it detects WSL and opens your real Windows browser). `make urls` prints every demo URL to click.
 
 We notice that we get a big list of products. The kitchen is cooking. ✅

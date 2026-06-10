@@ -102,6 +102,7 @@ Then open the app in your browser:
 
 ```bash
 make open          # opens http://localhost:8088 (works on macOS, Linux, WSL, Windows)
+make open http://localhost:8081/en/products/db   # or open any URL directly
 make urls          # or print every dashboard URL to Ctrl+click
 ```
 

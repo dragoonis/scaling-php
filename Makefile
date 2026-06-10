@@ -165,7 +165,17 @@ compare-load: ## 🔥 Drive ALL THREE runtimes at once (use this with 'make comp
 	k6 run -e EMBER_TARGETS=fpm,franken,worker k6/ember_ramp.js
 
 # Open the app in the default browser - works on macOS, Linux, WSL and Windows.
+#   make open                                        opens the default URL below
+#   make open http://localhost:8081/en/products/db   opens any URL (URL=... still works)
 URL ?= http://localhost:8088
+ifeq (open,$(firstword $(MAKECMDGOALS)))
+ifneq ($(word 2,$(MAKECMDGOALS)),)
+URL := $(word 2,$(MAKECMDGOALS))
+# Swallow the URL goal so make doesn't try to build it as a target.
+%:
+	@:
+endif
+endif
 open: ## 🌐 Open the app in your default browser (macOS / Linux / WSL / Windows)
 	@bash bin/open-url.sh "$(URL)"
 
