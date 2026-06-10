@@ -141,11 +141,12 @@ clean:
 #   Ember is the tool from https://github.com/alexandre-daubois/ember
 #   Install once:  brew install alexandre-daubois/tap/ember
 # ──────────────────────────────────────────────────────────────
-# Defaults target FrankenPHP CLASSIC (:8080 / admin :2019). Classic stays rock-solid
-# under load; the worker mode can deadlock when hammered, so it's not the default for
-# the live wave. `make ember` + `make ember-load` work as a matched pair out of the box.
-EMBER_ADDR ?= http://localhost:2019
-EMBER_TARGETS ?= franken
+# Defaults target the FrankenPHP WORKER (:8081 / admin :2020) - it pre-warms at boot
+# (prod mode) so it handles load without the cold-start wedge classic hits. `make ember`
+# + `make ember-load` work as a matched pair out of the box. Watch classic instead with
+# EMBER_ADDR=http://localhost:2019 / EMBER_TARGETS=franken.
+EMBER_ADDR ?= http://localhost:2020
+EMBER_TARGETS ?= worker
 .PHONY: ember ember-install ember-load compare compare-load open urls
 
 ember-install: ## 🔥 Install the Ember CLI (auto-detects macOS / Linux / Windows)

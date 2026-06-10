@@ -92,11 +92,11 @@ In your **first terminal**, run:
 make ember
 ```
 
-That opens a live dashboard watching **FrankenPHP classic** (`http://localhost:8080`, the steady server we
-load in this demo, 12 threads). Right now the kitchen is quiet, so most numbers are small (you'll see
-`RPS 0` - that's normal until we send traffic in Step 4).
+That opens a live dashboard watching the **FrankenPHP worker** (`http://localhost:8081`, the fastest mode,
+20 threads - and the one that handles load reliably). Right now the kitchen is quiet, so most numbers are
+small (you'll see `RPS 0` - that's normal until we send traffic in Step 4).
 
-> Want to watch the **worker** instead (20 threads, the fastest mode)? Run `make ember EMBER_ADDR=http://localhost:2020`.
+> Want to watch **classic** instead (12 threads)? Run `make ember EMBER_ADDR=http://localhost:2019`.
 
 ![Step 3 - the Ember dashboard opens, quiet (RPS 0)](docs/images/ember-03-open.png)
 > 📸 *Capture: the dashboard right after it opens. Save as `docs/images/ember-03-open.png`.*
@@ -116,8 +116,8 @@ load in this demo, 12 threads). Right now the kitchen is quiet, so most numbers 
 | **`?`**           | Show the help screen with every key.                              |
 | **`q`**           | **Quit** Ember.                                                    |
 
-👉 **Do this now:** press **`Tab`** once to land on the **`FrankenPHP (12 threads)`** tab. That's our demo
-view - it lists all 12 cooks. (If you point Ember at the worker it'll say 20 threads - same idea.) The first
+👉 **Do this now:** press **`Tab`** once to land on the **`FrankenPHP (20 threads)`** tab. That's our demo
+view - it lists all 20 cooks. (If you switched to classic it'll say 12 threads - same idea.) The first
 **`[Caddy]`** tab's "Host" list stays empty in this demo because our server has no website name - that's
 expected, just ignore it.
 

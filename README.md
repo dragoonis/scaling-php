@@ -111,12 +111,13 @@ The quickest way to see what this project is about. We use **[Ember](https://git
 a terminal dashboard for FrankenPHP, and watch it react to a wave of traffic.
 
 ```bash
-# one-time: install the Ember CLI (auto-detects macOS / Linux / Windows)
+# one-time setup: install Ember, start the stack, create + seed the database
 make ember-install
-
-# start the app + FrankenPHP, fill the database
-make up && make up-franken && make setup
+make up && make up-worker && make setup
 ```
+
+> `make setup` (re)seeds the database (10k products + projections) - it's a **one-time** step.
+> On later runs just start the services: `make up && make up-franken`.
 
 ```bash
 # terminal 1 - the live dashboard
