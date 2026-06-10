@@ -150,13 +150,13 @@ Open a **second terminal** right next to the first one, and run:
 make ember-load
 ```
 
-That's it - no flags. It sends a long, realistic **wave** of visitors at the same classic server your
-Ember is watching (about 2.5 minutes). The wave goes:
+That's it - no flags. It sends a realistic **wave** of visitors at the same **worker** server your
+Ember is watching (about a minute). The wave goes:
 
-1. **Up** - more and more customers arrive (lunch rush starts) 📈
-2. A short **busy plateau**
-3. **Down** - the rush calms (people go back to work) 📉
-4. **Up again, even higher** - a second, bigger rush 📈📈
+1. **Up** - a first rush of customers arrives 📈
+2. **Down** - the rush calms (people go back to work) 📉
+3. **Up and down again** - more sharp rushes, one bigger than the first 📈📉
+4. **The biggest rush of all** 📈📈
 5. **Empty** - everyone goes home
 
 You'll see the load tool print its own progress bars, and within a few seconds **RPS climbs in the Ember
@@ -245,8 +245,8 @@ make compare
 make compare-load
 ```
 
-> ⚠️ Use **`make compare-load`** here, not `make ember-load`. Plain `make ember-load` only hits classic,
-> so the FPM and worker bars would sit near zero. `make compare-load` hits all three.
+> ⚠️ Use **`make compare-load`** here, not `make ember-load`. Plain `make ember-load` only hits the worker,
+> so the FPM and classic bars would sit near zero. `make compare-load` hits all three.
 
 `make compare` draws one glowing bar per runtime, so the audience can see the **worker's req/sec rocket past
 the other two** in a single screen. (Press Ctrl-C to quit.)
@@ -268,7 +268,8 @@ ember --addr http://localhost:2020   # the worker (port 8081) - the default
 And you can aim the traffic wave at one or more servers:
 
 ```bash
-EMBER_TARGETS=worker make ember-load          # just the worker (what this guide uses)
+make ember-load                                   # just the worker (the default - what this guide uses)
+EMBER_TARGETS=franken make ember-load             # just classic
 EMBER_TARGETS=fpm,franken,worker make ember-load  # all three at once
 ```
 
@@ -295,5 +296,13 @@ restart:
 docker compose up -d --force-recreate franken-worker   # or franken / app
 ```
 
+**RPS stays at 0 in Ember even though the wave is running.**
+The wave warms up by fetching product IDs from the **app server on :8088** - if that fetch fails, k6
+still shows its progress bars for the full run but sends **zero** real traffic, so Ember never moves.
+Scroll to the top of the k6 output: if you see `Could not load product IDs`, make sure **all** of Step 1
+ran - `make up` (the app on :8088 must be running, not just the worker) and `make setup` (the database
+must be filled) - then start the wave again.
+
 **The wave says it couldn't load product IDs.**
-The database isn't filled yet. Run `make setup` and try again.
+Same cause as above: the app on :8088 isn't running (`make up`) or the database isn't filled yet
+(`make setup`). Fix that and try again.

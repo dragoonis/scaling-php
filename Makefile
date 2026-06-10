@@ -152,10 +152,10 @@ EMBER_TARGETS ?= worker
 ember-install: ## 🔥 Install the Ember CLI (auto-detects macOS / Linux / Windows)
 	@bash bin/install-ember.sh
 
-ember: ## 🔥 Open the Ember dashboard (classic by default; EMBER_ADDR=...:2020 for the worker)
+ember: ## 🔥 Open the Ember dashboard (worker by default; EMBER_ADDR=http://localhost:2019 for classic)
 	ember --addr $(EMBER_ADDR)
 
-ember-load: ## 🔥 Run the up→down→up traffic wave (classic by default; EMBER_TARGETS=worker for the worker)
+ember-load: ## 🔥 Run the up→down→up traffic wave (worker by default; EMBER_TARGETS=franken for classic)
 	k6 run -e EMBER_TARGETS=$(EMBER_TARGETS) k6/ember_ramp.js
 
 compare: ## 🔥 Side-by-side bars for FPM vs FrankenPHP classic vs worker (run alongside 'make compare-load')
@@ -463,8 +463,8 @@ help:
 	@echo ""
 	@echo "🔥 Ember live demo:"
 	@echo "  ember-install           - Install the Ember CLI (macOS / Linux / Windows)"
-	@echo "  ember                   - Open the Ember dashboard (classic by default)"
-	@echo "  ember-load              - Run the up->down->up traffic wave (classic)"
+	@echo "  ember                   - Open the Ember dashboard (worker by default)"
+	@echo "  ember-load              - Run the up->down->up traffic wave (worker)"
 	@echo "  compare                 - Side-by-side bars: FPM vs classic vs worker"
 	@echo "  compare-load            - Drive ALL THREE runtimes (use with 'compare')"
 	@echo "  docker                  - Pull all required Docker images"
