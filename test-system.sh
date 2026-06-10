@@ -30,6 +30,14 @@ check_command "docker-compose" "Docker Compose" || all_installed=false
 check_command "make" "Make" || all_installed=false
 check_command "k6" "K6" || all_installed=false
 
+# Ember is optional - only needed for the live 'make ember' demo, and it has its
+# own installer, so a missing Ember is just a hint, not a failure.
+if command -v ember >/dev/null 2>&1; then
+    echo "✅ Ember is installed: $(which ember) ($(ember version 2>/dev/null | head -1))"
+else
+    echo "ℹ️  Ember (live demo dashboard) is not installed - run 'make ember-install' when you need it"
+fi
+
 echo ""
 echo "=============================="
 
