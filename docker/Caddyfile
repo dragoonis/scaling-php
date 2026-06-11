@@ -1,5 +1,10 @@
 {
-	admin 0.0.0.0:2019
+	admin 0.0.0.0:2019 {
+		# The host maps this port to 2019 (franken) and 2020 (franken-worker);
+		# without these origins the admin API rejects browser requests
+		# ("client is not allowed to access from origin ...").
+		origins localhost:2019 localhost:2020 127.0.0.1:2019 127.0.0.1:2020
+	}
 	metrics
 	auto_https off
 
