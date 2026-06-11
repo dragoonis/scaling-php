@@ -35,5 +35,10 @@
 
 	{$CADDY_SERVER_EXTRA_DIRECTIVES}
 
+	# Browser-friendly Prometheus metrics. The admin endpoint (:2019/metrics)
+	# rejects browser navigations (Sec-Fetch-Mode triggers its origin check),
+	# so expose the same metrics on the app listener too.
+	metrics /metrics
+
 	php_server
 }

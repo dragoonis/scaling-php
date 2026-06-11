@@ -33,8 +33,13 @@ the difference live. Everything runs in Docker Compose and is driven by the Make
 | Prometheus            | http://localhost:9090         | Prometheus metrics                    |
 | Opcache Dashboard     | http://localhost:42042        | PHP Opcache dashboard                 |
 | Opcache Metrics (FPM) | http://localhost:8088/metrics | PHP Opcache metrics via FPM app       |
-| Franken Metrics       | http://localhost:2019/metrics | Caddy/FrankenPHP metrics (non-worker) |
-| Worker Metrics        | http://localhost:2020/metrics | Caddy/FrankenPHP metrics (worker)     |
+| Franken Metrics       | http://localhost:8080/metrics | Caddy/FrankenPHP metrics (non-worker) |
+| Worker Metrics        | http://localhost:8081/metrics | Caddy/FrankenPHP metrics (worker)     |
+
+> The same metrics are also served by the Caddy admin API on ports 2019 (non-worker) and
+> 2020 (worker) — used by Prometheus and fine with `curl` — but Caddy v2.11 rejects browser
+> navigations to the admin API as CSRF protection (browsers send `Sec-Fetch-*` headers that
+> trigger its origin check, producing `client is not allowed to access from origin ''`).
 
 ## Setup
 

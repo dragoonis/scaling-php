@@ -20,7 +20,7 @@ Go to - http://localhost:8080/
 
 Check franken metric is up
 
-go to http://localhost:2019/metrics
+go to http://localhost:8080/metrics (or `curl http://localhost:2019/metrics` — the admin port works with curl but not in a browser)
 
 Find CTRL / CMD + F `frankenphp_total_threads`
 
@@ -70,7 +70,7 @@ Go to - http://localhost:8081/
 
 Check franken metrics is up
 
-Go to http://localhost:2020/metrics
+Go to http://localhost:8081/metrics (or `curl http://localhost:2020/metrics` — the admin port works with curl but not in a browser)
 
 Find CTRL / CMD + F `frankenphp_total_threads`
 
