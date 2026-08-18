@@ -9,6 +9,9 @@ comparison and monitoring.
 
 ## Bring it up
 
+> Prerequisite: bootstrap the app once first (`make up && make setup` - see [fpm.md](fpm.md)).
+> All three runtimes share the same code, vendor/ and database, so this only needs doing once.
+
 ### up normal franken
 
 ```
@@ -16,7 +19,10 @@ make up-franken
 make ps | grep franken
 ```
 
-Go to - http://localhost:8080/
+Go to - http://localhost:8080/products
+
+After pulling code changes, restart the runtime (`docker compose restart franken franken-worker`) -
+opcache caches compiled PHP in production mode, so edits are invisible until a restart.
 
 ### Show target prom sources
 

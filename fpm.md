@@ -2,13 +2,22 @@
 
 ## Boot Normal PHP with FPM
 
-Start the PHP-FPM service using Docker Compose:
+First time (boots the container, installs composer dependencies, then fills the database):
 
 ```bash
 make up
+make setup
 ```
 
-This boots the FPM container with the configuration defined in `docker-compose.yml -> app: service`.
+This boots the FPM container with the configuration defined in `docker-compose.yml -> app: service`,
+then runs the Laravel migrations and seeds the demo data (10k products, 2k customers, 5k orders).
+
+Later runs: just `make up` - the database and vendor/ survive between sessions, and `make setup`
+is safe to re-run anytime (it skips data that already exists). After pulling code changes, run
+`docker compose restart app` - the production opcache settings cache compiled PHP, so edited
+files are not picked up until the container restarts.
+
+Check it works: http://localhost:8088/products
 
 ## FPM Settings & Configuration
 
