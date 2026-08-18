@@ -60,7 +60,7 @@ shell:
 	docker compose exec app bash
 
 up:
-	docker compose up -d app
+	docker compose up -d --build app
 	docker compose exec app composer install
 	docker compose up -d redis
 
@@ -76,13 +76,13 @@ up-redis:
 
 
 up-franken:
-	docker compose up franken -d
+	docker compose up franken -d --build
 
 down-franken:
 	docker compose stop franken
 
 up-worker:
-	docker compose up franken-worker -d
+	docker compose up franken-worker -d --build
 
 down-worker:
 	docker compose stop franken-worker
