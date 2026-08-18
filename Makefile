@@ -52,6 +52,9 @@ docker-frankenphp:
 build:
 	docker compose build
 
+rebuild: ## 🔨 Rebuild and restart all three runtimes (run this after switching branches)
+	docker compose up -d --build app franken franken-worker
+
 restart:
 	docker compose stop app
 	docker compose up -d app
