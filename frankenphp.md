@@ -116,6 +116,11 @@ you can scroll down to see more graph
 
 ## Performance Comparison: PHP-FPM vs FrankenPHP Classic vs FrankenPHP Worker
 
+![Same Laravel app on three runtimes](docs/images/runtime-benchmark.png)
+
+Measured on this repo with k6 (50 VUs, 30s per runtime, same GET /products/{id} endpoint,
+zero failed requests). Interactive slide: [docs/diagrams/runtime-benchmark.html](docs/diagrams/runtime-benchmark.html).
+
 So far we are testing FPM, Franken Classic and Franken worker mode and we know where Franken worker shine
 
 ### Performance Summary Table
