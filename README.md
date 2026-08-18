@@ -13,7 +13,7 @@ make up-franken  # FrankenPHP classic on :8080 (admin :2019)
 make up-worker   # FrankenPHP worker via Laravel Octane on :8081 (admin :2020)
 ```
 
-- http://localhost:8088 - Laravel welcome page via PHP-FPM + nginx
+- http://localhost:8088 - Laravel app via PHP-FPM + nginx (try /products for the demo data)
 - http://localhost:8080 - same app via FrankenPHP classic (full boot per request)
 - http://localhost:8081 - same app via **Octane on FrankenPHP** (kept warm, 16 workers)
 - Metrics: http://localhost:8081/metrics, plus the Caddy admin APIs on :2019 / :2020
@@ -126,7 +126,7 @@ Then open the app in your browser:
 
 ```bash
 make open          # opens http://localhost:8088 (works on macOS, Linux, WSL, Windows)
-make open http://localhost:8081/   # or open any URL directly
+make open http://localhost:8081/products   # or open any URL directly
 make urls          # or print every dashboard URL to Ctrl+click
 ```
 
@@ -141,7 +141,7 @@ make ember-install
 make up && make up-worker && make setup
 ```
 
-> `make setup` runs the Laravel migrations and seeders - it's a **one-time** step.
+> `make setup` runs the Laravel migrations and seeds ~10,000 products - it's a **one-time** step.
 > On later runs just start the services: `make up && make up-franken`.
 
 ```bash

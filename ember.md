@@ -48,12 +48,12 @@ make up-worker   # start the FrankenPHP worker (our star server)
 
 Now check the kitchen is open. Open this in your browser:
 
-- http://localhost:8081/
+- http://localhost:8081/products
 
-> 💡 On **WSL / Windows / Linux** where Ctrl+click might not open it, run `make open http://localhost:8081/`
+> 💡 On **WSL / Windows / Linux** where Ctrl+click might not open it, run `make open http://localhost:8081/products`
 > (it detects WSL and opens your real Windows browser). `make urls` prints every demo URL to click.
 
-We notice that we get the Laravel welcome page, served by **Octane on FrankenPHP**. The kitchen is cooking. ✅
+We notice that we get a big list of products as JSON, served by **Octane on FrankenPHP**. The kitchen is cooking. ✅
 
 ![Step 1 - the worker returns the Laravel welcome page in the browser](docs/images/ember-01-welcome.png)
 > 📸 *Capture: the browser showing the Laravel welcome page at `localhost:8081`. Save as `docs/images/ember-01-welcome.png`.*
@@ -317,5 +317,7 @@ docker compose up -d --force-recreate franken-worker   # or franken / app
 ```
 
 **RPS stays at 0 in Ember even though the wave is running.**
-The wave hits the welcome page on the worker (:8081). If Ember never moves, the worker probably
-isn't up - check `make ps` and `curl http://localhost:8081/`, then start the wave again.
+The wave warms up by fetching product IDs from the **app server on :8088** - if that fetch fails, k6
+still shows its progress bars but sends zero real traffic, so Ember never moves. Scroll to the top of
+the k6 output: if you see `Could not load product IDs`, make sure `make up` and `make setup` both ran,
+then start the wave again.

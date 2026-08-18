@@ -169,7 +169,7 @@ compare-load: ## 🔥 Drive ALL THREE runtimes at once (use this with 'make comp
 
 # Open the app in the default browser - works on macOS, Linux, WSL and Windows.
 #   make open                                        opens the default URL below
-#   make open http://localhost:8081/en/products/db   opens any URL (URL=... still works)
+#   make open http://localhost:8081/products   opens any URL (URL=... still works)
 URL ?= http://localhost:8088
 ifeq (open,$(firstword $(MAKECMDGOALS)))
 ifneq ($(word 2,$(MAKECMDGOALS)),)
@@ -186,7 +186,7 @@ urls: ## 🌐 Print all demo URLs (Ctrl/Cmd+click to open)
 	@echo "FPM app            http://localhost:8088"
 	@echo "FrankenPHP classic http://localhost:8080"
 	@echo "FrankenPHP worker  http://localhost:8081"
-	@echo "Products (FPM)     http://localhost:8088/en/products/db"
+	@echo "Products (FPM)     http://localhost:8088/products"
 	@echo "Grafana            http://localhost:3000  (symfony/symfony)"
 	@echo "Prometheus         http://localhost:9090"
 	@echo "OPcache dashboard  http://localhost:42042"
