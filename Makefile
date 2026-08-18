@@ -50,91 +50,91 @@ docker-frankenphp:
 	@echo "FrankenPHP image pulled successfully!"
 
 build:
-	docker-compose build
+	docker compose build
 
 restart:
-	docker-compose stop app
-	docker-compose up -d app
+	docker compose stop app
+	docker compose up -d app
 
 shell:
-	docker-compose exec app bash
+	docker compose exec app bash
 
 up:
-	docker-compose up -d app
-	docker-compose exec app composer install
-	docker-compose up -d redis
+	docker compose up -d app
+	docker compose exec app composer install
+	docker compose up -d redis
 
 down:
-	docker-compose down
+	docker compose down
 
 
 ps:
-	docker-compose ps
+	docker compose ps
 
 up-redis:
-	docker-compose up -d redis
+	docker compose up -d redis
 
 
 up-franken:
-	docker-compose up franken -d
+	docker compose up franken -d
 
 down-franken:
-	docker-compose stop franken
+	docker compose stop franken
 
 up-worker:
-	docker-compose up franken-worker -d
+	docker compose up franken-worker -d
 
 down-worker:
-	docker-compose stop franken-worker
+	docker compose stop franken-worker
 
 up-prometheus:
-	docker-compose up -d prometheus
+	docker compose up -d prometheus
 
 down-prometheus:
-	docker-compose down prometheus
+	docker compose down prometheus
 
 up-grafana:
-	docker-compose up prometheus grafana -d
+	docker compose up prometheus grafana -d
 
 down-grafana:
-	docker-compose stop prometheus grafana
+	docker compose stop prometheus grafana
 
 up-opcache-dashboard:
-	docker-compose up -d opcache-dashboard
+	docker compose up -d opcache-dashboard
 
 down-opcache-dashboard:
-	docker-compose down opcache-dashboard
+	docker compose down opcache-dashboard
 
 up-exporter:
-	docker-compose up -d php-fpm-exporter
+	docker compose up -d php-fpm-exporter
 
 down-exporter:
-	docker-compose down php-fpm-exporter
+	docker compose down php-fpm-exporter
 
 app-shell:
-	docker-compose exec -it app bash
+	docker compose exec -it app bash
 
 franken-shell:
-	docker-compose exec -it franken bash
+	docker compose exec -it franken bash
 
 worker-shell:
-	docker-compose exec -it franken-worker bash
+	docker compose exec -it franken-worker bash
 
 migrate: ## Create/update the DB schema from entity metadata (DB-agnostic; the committed migrations are SQLite-only)
-	docker-compose exec app php bin/console doctrine:schema:update --force --complete
+	docker compose exec app php bin/console doctrine:schema:update --force --complete
 
 seed: ## Seed the database with test data
 	@echo "Seeding database with test data..."
 	@echo "Seeder file: src/Command/SeedDatabaseCommand.php"
-	docker-compose exec app php bin/console app:seed-database
+	docker compose exec app php bin/console app:seed-database
 
 setup: migrate seed ## Run migrations and seed database
 
 test: ## Run the unit test suite (APP_ENV=test)
-	docker-compose exec -e APP_ENV=test app php bin/phpunit
+	docker compose exec -e APP_ENV=test app php bin/phpunit
 
 clean:
-	docker-compose down -v --remove-orphans
+	docker compose down -v --remove-orphans
 
 # ──────────────────────────────────────────────────────────────
 # 🔥 Ember - live FrankenPHP dashboard (see ember.md)
@@ -159,7 +159,7 @@ ember-load: ## 🔥 Run the up→down→up traffic wave (worker by default; EMBE
 	k6 run -e EMBER_TARGETS=$(EMBER_TARGETS) k6/ember_ramp.js
 
 compare: ## 🔥 Side-by-side bars for FPM vs FrankenPHP classic vs worker (run alongside 'make compare-load')
-	docker-compose exec app php bin/scope
+	docker compose exec app php bin/scope
 
 compare-load: ## 🔥 Drive ALL THREE runtimes at once (use this with 'make compare')
 	k6 run -e EMBER_TARGETS=fpm,franken,worker k6/ember_ramp.js
@@ -430,37 +430,37 @@ benchmark-product-projection-all:
 .PHONY: rebuild-projections
 rebuild-projections:
 	@echo "Rebuilding all projections..."
-	@docker-compose exec app php bin/console app:rebuild-product-projections 2>&1 | grep -v "User Deprecated"
-	@docker-compose exec app php bin/console app:rebuild-customer-projections 2>&1 | grep -v "User Deprecated"
-	@docker-compose exec app php bin/console app:rebuild-order-projections 2>&1 | grep -v "User Deprecated"
+	@docker compose exec app php bin/console app:rebuild-product-projections 2>&1 | grep -v "User Deprecated"
+	@docker compose exec app php bin/console app:rebuild-customer-projections 2>&1 | grep -v "User Deprecated"
+	@docker compose exec app php bin/console app:rebuild-order-projections 2>&1 | grep -v "User Deprecated"
 
 .PHONY: rebuild-products
 rebuild-products:
 	@echo "Rebuilding product projections..."
-	docker-compose exec app bin/console app:rebuild-product-projections
+	docker compose exec app bin/console app:rebuild-product-projections
 
 .PHONY: rebuild-customers
 rebuild-customers:
 	@echo "Rebuilding customer projections..."
-	docker-compose exec app bin/console app:rebuild-customer-projections
+	docker compose exec app bin/console app:rebuild-customer-projections
 
 .PHONY: rebuild-orders
 rebuild-orders:
 	@echo "Rebuilding order projections..."
-	docker-compose exec app bin/console app:rebuild-order-projections
+	docker compose exec app bin/console app:rebuild-order-projections
 
 .PHONY: seed-db
 seed-db:
 	@echo "Seeding database with test data..."
-	docker-compose exec app bin/console app:seed-database
+	docker compose exec app bin/console app:seed-database
 
 .PHONY: reset-and-seed
 reset-and-seed:
 	@echo "Resetting database and seeding with test data..."
-	docker-compose exec php bin/console doctrine:database:drop --force --if-exists
-	docker-compose exec php bin/console doctrine:database:create
-	docker-compose exec php bin/console doctrine:migrations:migrate --no-interaction
-	docker-compose exec php bin/console app:seed-database
+	docker compose exec php bin/console doctrine:database:drop --force --if-exists
+	docker compose exec php bin/console doctrine:database:create
+	docker compose exec php bin/console doctrine:migrations:migrate --no-interaction
+	docker compose exec php bin/console app:seed-database
 
 
 
