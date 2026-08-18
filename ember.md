@@ -97,6 +97,9 @@ with 16 workers, the fastest mode and the one that handles load reliably). Right
 so most numbers are small (you'll see `RPS 0` - that's normal until we send traffic in Step 4).
 
 > Want to watch **classic** instead (12 threads)? Run `make ember EMBER_ADDR=http://localhost:2019 EMBER_SERVICE=franken`.
+> One caveat when watching classic: Ember reads Caddy's per-handler request counters, and the classic
+> Caddyfile's chain has three handlers, so Ember's RPS for classic can read up to ~3x the real rate
+> (upstream issue, not this repo). The worker's numbers are accurate - another reason it is the default.
 
 > ⚠️ Always open the dashboard through **`make ember`**, not by running `ember --addr ...` yourself.
 > The make target adds `--stdin-logs`, which keeps Ember from rewriting the server's config over the
@@ -257,6 +260,14 @@ make compare-load
 
 `make compare` draws one glowing bar per runtime, so the audience can see the **worker's req/sec rocket past
 the other two** in a single screen. (Press Ctrl-C to quit.)
+
+> 📏 **How the numbers are counted.** The req/sec figures are averaged over a 10 second sliding window,
+> so during the first ramp they build up for a few seconds - judge the ranking at the wave's plateau,
+> not in the opening seconds. Under the hood scope takes the **max across Caddy's per-handler counters**:
+> Caddy counts one request once per handler in the middleware chain, and the classic Caddyfile has three
+> handlers while the worker has one. An earlier version summed them, which inflated classic 3x and made
+> it look faster than the worker - if your numbers ever look impossible (targets adding up to more than
+> the load you are sending), check for exactly this kind of double counting.
 
 ![Bonus - make compare: side-by-side bars for FPM, classic, and worker](docs/images/ember-09-compare.png)
 > 📸 *Capture: `make compare` while the wave runs. Save as `docs/images/ember-09-compare.png`.*
