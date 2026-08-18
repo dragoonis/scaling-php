@@ -11,11 +11,11 @@ Route::get('/products', function () {
 });
 
 Route::get('/products/cached', function () {
-    return Cache::remember('products.all', 60, fn () => ['products' => Product::query()->orderBy('id')->get()]);
+    return Cache::remember('products.all', 60, fn () => ['products' => Product::query()->orderBy('id')->get()->toArray()]);
 });
 
 Route::get('/products/cached/{id}', function (int $id) {
-    return Cache::remember("products.$id", 60, fn () => Product::query()->findOrFail($id));
+    return Cache::remember("products.$id", 60, fn () => Product::query()->findOrFail($id)->toArray());
 });
 
 Route::get('/products/{product}', function (Product $product) {
@@ -27,7 +27,7 @@ Route::get('/customers', function () {
 });
 
 Route::get('/customers/cached', function () {
-    return Cache::remember('customers.all', 60, fn () => ['customers' => Customer::query()->orderBy('id')->get()]);
+    return Cache::remember('customers.all', 60, fn () => ['customers' => Customer::query()->orderBy('id')->get()->toArray()]);
 });
 
 Route::get('/customers/{customer}', function (Customer $customer) {
@@ -39,7 +39,7 @@ Route::get('/orders', function () {
 });
 
 Route::get('/orders/cached', function () {
-    return Cache::remember('orders.all', 60, fn () => ['orders' => Order::query()->orderBy('id')->get()]);
+    return Cache::remember('orders.all', 60, fn () => ['orders' => Order::query()->orderBy('id')->get()->toArray()]);
 });
 
 Route::get('/orders/{order}', function (Order $order) {
