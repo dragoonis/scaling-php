@@ -6,6 +6,10 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/opcache-stats', function () {
+    return opcache_get_status(false) ?: ['error' => 'opcache disabled'];
+});
+
 Route::get('/runtime', function () {
     static $requestsServedByThisWorker = 0;
     $requestsServedByThisWorker++;
