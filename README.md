@@ -66,9 +66,10 @@ make up-exporter  # php-fpm metrics exporter
 
 ## Tuning
 
-- FrankenPHP knobs and the sizing math: **[frankenphp.md](frankenphp.md)** (see the
-  tuning cheat sheet) - workers default to 16, override per machine with
+- Octane worker knobs and the sizing math: **[franken-worker.md](franken-worker.md)** -
+  workers default to 16, override per machine with
   `OCTANE_WORKERS=28 docker compose up -d franken-worker`
+- FrankenPHP classic: **[frankenphp.md](frankenphp.md)**
 - PHP-FPM pool sizing: **[fpm.md](fpm.md)**
 
 ## Gotchas that will bite you
