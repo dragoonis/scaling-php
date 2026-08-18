@@ -42,42 +42,42 @@ Open a terminal in this project and run these three lines:
 
 ```bash
 make up          # start the app + database helpers
-make setup       # fill the database with ~10,000 products
+make setup       # run the Laravel migrations and seeders
 make up-worker   # start the FrankenPHP worker (our star server)
 ```
 
 Now check the kitchen is open. Open this in your browser:
 
-- http://localhost:8081/en/products/db
+- http://localhost:8081/
 
-> 💡 On **WSL / Windows / Linux** where Ctrl+click might not open it, run `make open http://localhost:8081/en/products/db`
+> 💡 On **WSL / Windows / Linux** where Ctrl+click might not open it, run `make open http://localhost:8081/`
 > (it detects WSL and opens your real Windows browser). `make urls` prints every demo URL to click.
 
-We notice that we get a big list of products. The kitchen is cooking. ✅
+We notice that we get the Laravel welcome page, served by **Octane on FrankenPHP**. The kitchen is cooking. ✅
 
-![Step 1 - the worker returns a list of products in the browser](docs/images/ember-01-products.png)
-> 📸 *Capture: the browser showing the products JSON at `localhost:8081`. Save as `docs/images/ember-01-products.png`.*
+![Step 1 - the worker returns the Laravel welcome page in the browser](docs/images/ember-01-welcome.png)
+> 📸 *Capture: the browser showing the Laravel welcome page at `localhost:8081`. Save as `docs/images/ember-01-welcome.png`.*
 
 ---
 
 ## Step 2 - Get the Ember tool
 
 You only do this once. One command, works on **macOS, Linux, and Windows** (it auto-detects your OS and
-picks Homebrew, the install script, or `go install`):
+picks the official install script, Homebrew, or `go install`). It also **upgrades** an Ember older than
+1.5, which this demo needs:
 
 ```bash
 make ember-install
 ```
 
-Check it's there:
+Check it's there and at least 1.5:
 
 ```bash
 ember version
 ```
 
-> Prefer to do it by hand on a Mac? `brew install alexandre-daubois/tap/ember`. If macOS blocks it the
-> first time, run `xattr -d com.apple.quarantine $(which ember)` and try again (the installer does this
-> for you automatically).
+> If macOS blocks it the first time, run `xattr -d com.apple.quarantine $(which ember)` and try again
+> (the installer does this for you automatically).
 
 ![Step 2 - ember version prints the installed version](docs/images/ember-02-version.png)
 > 📸 *Capture: the terminal after `ember version`. Save as `docs/images/ember-02-version.png`.*
@@ -92,11 +92,17 @@ In your **first terminal**, run:
 make ember
 ```
 
-That opens a live dashboard watching the **FrankenPHP worker** (`http://localhost:8081`, the fastest mode,
-20 threads - and the one that handles load reliably). Right now the kitchen is quiet, so most numbers are
-small (you'll see `RPS 0` - that's normal until we send traffic in Step 4).
+That opens a live dashboard watching the **FrankenPHP worker** (`http://localhost:8081` - Laravel Octane
+with 16 workers, the fastest mode and the one that handles load reliably). Right now the kitchen is quiet,
+so most numbers are small (you'll see `RPS 0` - that's normal until we send traffic in Step 4).
 
-> Want to watch **classic** instead (12 threads)? Run `make ember EMBER_ADDR=http://localhost:2019`.
+> Want to watch **classic** instead (12 threads)? Run `make ember EMBER_ADDR=http://localhost:2019 EMBER_SERVICE=franken`.
+
+> ⚠️ Always open the dashboard through **`make ember`**, not by running `ember --addr ...` yourself.
+> The make target adds `--stdin-logs`, which keeps Ember from rewriting the server's config over the
+> admin API - without it, a Dockerized FrankenPHP freezes solid the moment the dashboard opens
+> (0 threads, every request hangs) and only a container restart brings it back. Needs Ember 1.5+;
+> `make ember-install` upgrades older versions.
 
 ![Step 3 - the Ember dashboard opens, quiet (RPS 0)](docs/images/ember-03-open.png)
 > 📸 *Capture: the dashboard right after it opens. Save as `docs/images/ember-03-open.png`.*
@@ -116,8 +122,9 @@ small (you'll see `RPS 0` - that's normal until we send traffic in Step 4).
 | **`?`**           | Show the help screen with every key.                              |
 | **`q`**           | **Quit** Ember.                                                    |
 
-👉 **Do this now:** press **`Tab`** once to land on the **`FrankenPHP (20 threads)`** tab. That's our demo
-view - it lists all 20 cooks. (If you switched to classic it'll say 12 threads - same idea.) The first
+👉 **Do this now:** press **`Tab`** once to land on the **`FrankenPHP (17 threads)`** tab. That's our demo
+view - it lists all the cooks: 16 Octane workers plus a spare handling thread. (If you switched to classic
+it'll say 12 threads - same idea.) The first
 **`[Caddy]`** tab's "Host" list stays empty in this demo because our server has no website name - that's
 expected, just ignore it.
 
@@ -258,11 +265,13 @@ the other two** in a single screen. (Press Ctrl-C to quit.)
 
 ## Want to watch a different server?
 
-By default `make ember` watches the **worker** (`http://localhost:2020`). You can point Ember anywhere:
+By default `make ember` watches the **worker** (`http://localhost:2020`). Point it at another server
+with the same make target (see the warning in Step 3 - don't run `ember --addr ...` by hand against
+the Docker servers):
 
 ```bash
-ember --addr http://localhost:2019   # the "classic" FrankenPHP (port 8080)
-ember --addr http://localhost:2020   # the worker (port 8081) - the default
+make ember EMBER_ADDR=http://localhost:2019 EMBER_SERVICE=franken   # the "classic" FrankenPHP (port 8080)
+make ember                                                          # the worker (port 8081) - the default
 ```
 
 And you can aim the traffic wave at one or more servers:
@@ -286,7 +295,18 @@ ember status --addr http://localhost:2020   # quick one-line health check
 ```
 
 **`ember: command not found`.**
-You skipped Step 2. Install it with `brew install alexandre-daubois/tap/ember`.
+You skipped Step 2. Install it with `make ember-install`.
+
+**The server freezes the moment Ember opens (RPS everywhere drops, pages never load).**
+You ran `ember --addr ...` directly instead of `make ember`, or your Ember is older than 1.5.
+Ember rewrote the server's config with a log endpoint the container can't reach, and FrankenPHP
+wedged. Recover the server and reopen the dashboard the supported way:
+
+```bash
+docker compose restart franken-worker   # or franken
+make ember-install                      # upgrades Ember if it's older than 1.5
+make ember
+```
 
 **A server returns PHP errors (e.g. `Call to undefined function ...`) right after first setup.**
 That server started before `composer install` finished, so its memory cache is stale. Give it a clean
@@ -297,12 +317,5 @@ docker compose up -d --force-recreate franken-worker   # or franken / app
 ```
 
 **RPS stays at 0 in Ember even though the wave is running.**
-The wave warms up by fetching product IDs from the **app server on :8088** - if that fetch fails, k6
-still shows its progress bars for the full run but sends **zero** real traffic, so Ember never moves.
-Scroll to the top of the k6 output: if you see `Could not load product IDs`, make sure **all** of Step 1
-ran - `make up` (the app on :8088 must be running, not just the worker) and `make setup` (the database
-must be filled) - then start the wave again.
-
-**The wave says it couldn't load product IDs.**
-Same cause as above: the app on :8088 isn't running (`make up`) or the database isn't filled yet
-(`make setup`). Fix that and try again.
+The wave hits the welcome page on the worker (:8081). If Ember never moves, the worker probably
+isn't up - check `make ps` and `curl http://localhost:8081/`, then start the wave again.
