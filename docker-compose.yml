@@ -46,7 +46,7 @@ services:
     tty: true
     env_file:
       - .env
-    command: ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=80", "--admin-host=0.0.0.0", "--admin-port=2019", "--workers=16", "--max-requests=250", "--caddyfile=/var/www/html/docker/Caddyfile.octane"]
+    command: ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=80", "--admin-host=0.0.0.0", "--admin-port=2019", "--workers=${OCTANE_WORKERS:-16}", "--max-requests=${OCTANE_MAX_REQUESTS:-250}", "--caddyfile=/var/www/html/docker/Caddyfile.octane"]
     networks:
       - app-net
 
