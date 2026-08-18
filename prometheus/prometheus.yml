@@ -7,11 +7,6 @@ scrape_configs:
     static_configs:
       - targets: ['php-fpm-exporter:9253']
 
-  - job_name: 'opcache'
-    metrics_path: /metrics
-    static_configs:
-      - targets: ['app:80']
-
   - job_name: 'caddy'
     metrics_path: /metrics
     static_configs:
