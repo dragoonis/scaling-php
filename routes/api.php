@@ -6,6 +6,20 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/runtime', function () {
+    static $requestsServedByThisWorker = 0;
+    $requestsServedByThisWorker++;
+
+    return [
+        'sapi' => php_sapi_name(),
+        'octane_worker_mode' => env('LARAVEL_OCTANE') === '1',
+        'pid' => getmypid(),
+        'requests_served_by_this_worker' => $requestsServedByThisWorker,
+        'app_booted_at' => defined('LARAVEL_START') ? LARAVEL_START : null,
+        'memory_mb' => round(memory_get_usage(true) / 1048576, 1),
+    ];
+});
+
 Route::get('/products', function () {
     return ['products' => Product::query()->orderBy('id')->get()];
 });
