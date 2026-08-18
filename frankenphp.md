@@ -135,6 +135,12 @@ So far we are testing FPM, Franken Classic and Franken worker mode and we know w
 
 ---
 
+## Tuning cheat sheet
+
+![FrankenPHP worker tuning](docs/images/franken-tuning.png)
+
+Interactive version: [docs/diagrams/franken-tuning.html](docs/diagrams/franken-tuning.html).
+
 ## Service Configuration
 
 ### FrankenPHP Services
