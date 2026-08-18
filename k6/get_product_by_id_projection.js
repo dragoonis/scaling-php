@@ -56,8 +56,7 @@ export default function (data) {
             }
             try {
                 const respData = r.json();
-                // Response format: {"product": {"id": ..., "name": ..., ...}}
-                const valid = respData && respData.product && respData.product.id !== undefined;
+                const valid = respData && respData.id !== undefined;
                 if (!valid && __ITER === 0) {
                     console.log(`[ERROR] Invalid response for product ${productId}:`, JSON.stringify(respData).substring(0, 200));
                 }
