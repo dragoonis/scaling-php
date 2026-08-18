@@ -120,6 +120,15 @@ fpm-htop: ## 🔍 Live htop inside the app container, filtered to the PHP-FPM pr
 fpm-ps: ## 🔍 One-shot list of the PHP-FPM processes inside the app container
 	docker compose exec app bash -c "ps aux | grep [p]hp-fpm"
 
+fpm-recycle-demo: ## 🔁 Swap in pm.max_requests=50 so worker recycling is visible in fpm-htop
+	FPM_CONF=fpm.demo.conf docker compose up -d app
+
+fpm-recycle-restore: ## 🔁 Back to the normal pool config (pm.max_requests=1000)
+	docker compose up -d app
+
+octane-reload: ## 🔁 Gracefully recycle all Octane workers (run it mid-load, zero dropped requests)
+	docker compose exec franken-worker php artisan octane:reload
+
 franken-shell:
 	docker compose exec -it franken bash
 
