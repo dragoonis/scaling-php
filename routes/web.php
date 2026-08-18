@@ -1,51 +1,7 @@
 <?php
 
-use App\Models\Customer;
-use App\Models\Order;
-use App\Models\Product;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
-});
-
-Route::get('/products', function () {
-    return ['products' => Product::query()->orderBy('id')->get()];
-});
-
-Route::get('/products/cached', function () {
-    return Cache::remember('products.all', 60, fn () => ['products' => Product::query()->orderBy('id')->get()]);
-});
-
-Route::get('/products/cached/{id}', function (int $id) {
-    return Cache::remember("products.$id", 60, fn () => Product::query()->findOrFail($id));
-});
-
-Route::get('/products/{product}', function (Product $product) {
-    return $product;
-});
-
-Route::get('/customers', function () {
-    return ['customers' => Customer::query()->orderBy('id')->get()];
-});
-
-Route::get('/customers/cached', function () {
-    return Cache::remember('customers.all', 60, fn () => ['customers' => Customer::query()->orderBy('id')->get()]);
-});
-
-Route::get('/customers/{customer}', function (Customer $customer) {
-    return $customer;
-});
-
-Route::get('/orders', function () {
-    return ['orders' => Order::query()->orderBy('id')->get()];
-});
-
-Route::get('/orders/cached', function () {
-    return Cache::remember('orders.all', 60, fn () => ['orders' => Order::query()->orderBy('id')->get()]);
-});
-
-Route::get('/orders/{order}', function (Order $order) {
-    return $order->load('customer');
 });
