@@ -25,15 +25,13 @@ mention Products/Customers/Orders endpoints, Redis projections, or `bin/console`
 
 ## What this demo shows
 
-- One Symfony app (Products / Customers / Orders) using **CQRS**: writes go to the database, reads come from
-  fast **Redis projections**.
-- The same app served by **three runtimes**, so you can compare them fairly:
+- One Laravel app served by **three runtimes**, so you can compare them fairly:
 
-  | Runtime            | Port | What it is                                    |
-  |--------------------|------|-----------------------------------------------|
-  | PHP-FPM            | 8088 | Traditional process-per-request               |
+  | Runtime            | Port | What it is                                     |
+  |--------------------|------|------------------------------------------------|
+  | PHP-FPM            | 8088 | Traditional process-per-request                |
   | FrankenPHP classic | 8080 | Modern PHP server on Caddy                     |
-  | FrankenPHP worker  | 8081 | Long-lived workers, app kept warm in memory   |
+  | Octane worker      | 8081 | Laravel Octane on FrankenPHP, app kept warm    |
 
 - Live metrics for all of them (FPM status, OPcache, Caddy/Prometheus) plus Grafana dashboards.
 - **🔥 [Ember](ember.md)** - a one-command live demo that ramps traffic up and down while you watch the
@@ -45,7 +43,7 @@ mention Products/Customers/Orders endpoints, Redis projections, or `bin/console`
 
 | Service               | URL                           | Description                           |
 |-----------------------|-------------------------------|---------------------------------------|
-| FPM App               | http://localhost:8088         | Main Symfony app (FPM)                |
+| FPM App               | http://localhost:8088         | Main Laravel app (FPM)                |
 | Franken               | http://localhost:8080         | FrankenPHP (HTTP, regular mode)       |
 | Franken Worker        | http://localhost:8081         | FrankenPHP Worker (HTTP, optimized)   |
 | Grafana               | http://localhost:3000         | Metrics dashboard (symfony/symfony)   |
@@ -128,7 +126,7 @@ Then open the app in your browser:
 
 ```bash
 make open          # opens http://localhost:8088 (works on macOS, Linux, WSL, Windows)
-make open http://localhost:8081/en/products/db   # or open any URL directly
+make open http://localhost:8081/   # or open any URL directly
 make urls          # or print every dashboard URL to Ctrl+click
 ```
 
@@ -143,7 +141,7 @@ make ember-install
 make up && make up-worker && make setup
 ```
 
-> `make setup` (re)seeds the database (10k products + projections) - it's a **one-time** step.
+> `make setup` runs the Laravel migrations and seeders - it's a **one-time** step.
 > On later runs just start the services: `make up && make up-franken`.
 
 ```bash
