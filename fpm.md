@@ -187,6 +187,10 @@ The FPM exporter converts FPM status data to Prometheus metrics format.
 
 ### Start FPM Exporter
 
+How the whole pipeline fits together (interactive version: [docs/diagrams/fpm-metrics-pipeline.html](diagrams/fpm-metrics-pipeline.html)):
+
+![PHP-FPM metrics pipeline](docs/images/fpm-metrics-pipeline.png)
+
 ```bash
 make up-exporter
 make ps | grep exporter
