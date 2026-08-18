@@ -55,8 +55,8 @@ Now check the kitchen is open. Open this in your browser:
 
 We notice that we get a big list of products as JSON, served by **Octane on FrankenPHP**. The kitchen is cooking. ✅
 
-![Step 1 - the worker returns the Laravel welcome page in the browser](docs/images/ember-01-welcome.png)
-> 📸 *Capture: the browser showing the Laravel welcome page at `localhost:8081`. Save as `docs/images/ember-01-welcome.png`.*
+![Step 1 - the worker returns the products JSON in the browser](docs/images/ember-01-products.png)
+> 📸 *Capture: the browser showing the products JSON at `localhost:8081/products`. Save as `docs/images/ember-01-products.png`.*
 
 ---
 
