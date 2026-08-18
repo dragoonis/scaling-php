@@ -96,6 +96,8 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: symfony
       GF_SECURITY_ADMIN_PASSWORD: symfony
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
     networks:
