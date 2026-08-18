@@ -120,18 +120,16 @@ franken-shell:
 worker-shell:
 	docker compose exec -it franken-worker bash
 
-migrate: ## Create/update the DB schema from entity metadata (DB-agnostic; the committed migrations are SQLite-only)
-	docker compose exec app php bin/console doctrine:schema:update --force --complete
+migrate: ## Run the Laravel migrations
+	docker compose exec app php artisan migrate --force
 
 seed: ## Seed the database with test data
-	@echo "Seeding database with test data..."
-	@echo "Seeder file: src/Command/SeedDatabaseCommand.php"
-	docker compose exec app php bin/console app:seed-database
+	docker compose exec app php artisan db:seed --force
 
 setup: migrate seed ## Run migrations and seed database
 
-test: ## Run the unit test suite (APP_ENV=test)
-	docker compose exec -e APP_ENV=test app php bin/phpunit
+test: ## Run the Laravel test suite
+	docker compose exec app php artisan test
 
 clean:
 	docker compose down -v --remove-orphans
@@ -139,21 +137,26 @@ clean:
 # ──────────────────────────────────────────────────────────────
 # 🔥 Ember - live FrankenPHP dashboard (see ember.md)
 #   Ember is the tool from https://github.com/alexandre-daubois/ember
-#   Install once:  brew install alexandre-daubois/tap/ember
+#   Install once:  make ember-install
 # ──────────────────────────────────────────────────────────────
 # Defaults target the FrankenPHP WORKER (:8081 / admin :2020) - it pre-warms at boot
 # (prod mode) so it handles load without the cold-start wedge classic hits. `make ember`
 # + `make ember-load` work as a matched pair out of the box. Watch classic instead with
 # EMBER_ADDR=http://localhost:2019 / EMBER_TARGETS=franken.
 EMBER_ADDR ?= http://localhost:2020
+EMBER_SERVICE ?= franken-worker
 EMBER_TARGETS ?= worker
 .PHONY: ember ember-install ember-load compare compare-load open urls
 
 ember-install: ## 🔥 Install the Ember CLI (auto-detects macOS / Linux / Windows)
 	@bash bin/install-ember.sh
 
-ember: ## 🔥 Open the Ember dashboard (worker by default; EMBER_ADDR=http://localhost:2019 for classic)
-	ember --addr $(EMBER_ADDR)
+# --stdin-logs is load-bearing: without it Ember hot-registers a net_writer log in
+# Caddy's config that dials back to the host, which the container can't reach, and
+# the config reload wedges FrankenPHP (0 threads, every request hangs). Needs Ember
+# >= 1.5 - 'make ember-install' upgrades older ones.
+ember: ## 🔥 Open the Ember dashboard (worker by default; EMBER_ADDR=http://localhost:2019 EMBER_SERVICE=franken for classic)
+	docker compose logs -f --no-log-prefix --tail 0 $(EMBER_SERVICE) | ember --addr $(EMBER_ADDR) --stdin-logs
 
 ember-load: ## 🔥 Run the up→down→up traffic wave (worker by default; EMBER_TARGETS=franken for classic)
 	k6 run -e EMBER_TARGETS=$(EMBER_TARGETS) k6/ember_ramp.js

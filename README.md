@@ -1,8 +1,27 @@
-# Scaling PHP Systems - FrankenPHP @ IPC Conference Germany
+# Scaling PHP Systems - FrankenPHP (Laravel branch)
 
-A Symfony CQRS demo for exploring how modern PHP runtimes scale. The same app runs three ways - **PHP-FPM**,
-**FrankenPHP classic**, and **FrankenPHP worker** - so you can load-test them side by side with k6 and watch
-the difference live. Everything runs in Docker Compose and is driven by the Makefile.
+A Laravel app for exploring how modern PHP runtimes scale. The same app runs three ways - **PHP-FPM**,
+**FrankenPHP classic**, and **FrankenPHP worker (Laravel Octane)** - so you can load-test them side by
+side with k6 and watch the difference live. Everything runs in Docker Compose and is driven by the Makefile.
+
+## Quickstart (this branch)
+
+```bash
+make up          # PHP-FPM app on :8088 (composer install runs inside the container)
+make setup       # run the Laravel migrations (sqlite, zero config)
+make up-franken  # FrankenPHP classic on :8080 (admin :2019)
+make up-worker   # FrankenPHP worker via Laravel Octane on :8081 (admin :2020)
+```
+
+- http://localhost:8088 - Laravel welcome page via PHP-FPM + nginx
+- http://localhost:8080 - same app via FrankenPHP classic (full boot per request)
+- http://localhost:8081 - same app via **Octane on FrankenPHP** (kept warm, 16 workers)
+- Metrics: http://localhost:8081/metrics, plus the Caddy admin APIs on :2019 / :2020
+
+The worker runs `php artisan octane:start --server=frankenphp` with `docker/Caddyfile.octane`
+(Octane's stub plus the `metrics` global option and the admin `origins` needed for browser access).
+The sections below describe the original Symfony demo and still need porting to Laravel where they
+mention Products/Customers/Orders endpoints, Redis projections, or `bin/console`.
 
 ## What this demo shows
 

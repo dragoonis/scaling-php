@@ -8,15 +8,9 @@ services:
       - "8088:80"
     env_file:
       - .env
-    environment:
-      APP_ENV: prod
-      DATABASE_URL: "mysql://app:app@database:3306/app?serverVersion=8.0&charset=utf8mb4"
     volumes:
       - .:/var/www/html
       - ./docker/fpm.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
-    depends_on:
-      database:
-        condition: service_healthy
     networks:
       - app-net
 
@@ -34,12 +28,7 @@ services:
     env_file:
       - .env
     environment:
-      APP_ENV: prod
-      DATABASE_URL: "mysql://app:app@database:3306/app?serverVersion=8.0&charset=utf8mb4"
       SERVER_NAME: ":80"
-    depends_on:
-      database:
-        condition: service_healthy
     networks:
       - app-net
 
@@ -54,18 +43,10 @@ services:
       - .:/var/www/html
       - caddy_data:/data
       - caddy_config:/config
-      - ./docker/Caddyfile:/etc/frankenphp/Caddyfile
     tty: true
     env_file:
       - .env
-    environment:
-      APP_RUNTIME: "Runtime\\FrankenPhpSymfony\\Runtime"
-      APP_ENV: prod
-      DATABASE_URL: "mysql://app:app@database:3306/app?serverVersion=8.0&charset=utf8mb4"
-      SERVER_NAME: ":80"
-    depends_on:
-      database:
-        condition: service_healthy
+    command: ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=80", "--admin-host=0.0.0.0", "--admin-port=2019", "--workers=16", "--caddyfile=/var/www/html/docker/Caddyfile.octane"]
     networks:
       - app-net
 

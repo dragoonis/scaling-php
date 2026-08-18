@@ -1,0 +1,54 @@
+{
+	{$CADDY_GLOBAL_OPTIONS}
+
+	admin {$CADDY_SERVER_ADMIN_HOST}:{$CADDY_SERVER_ADMIN_PORT} {
+		# The host maps this port to 2019 (franken) and 2020 (franken-worker);
+		# without these origins the admin API rejects browser requests
+		# ("client is not allowed to access from origin ...").
+		origins localhost:2019 localhost:2020 127.0.0.1:2019 127.0.0.1:2020
+	}
+	metrics
+
+	frankenphp {
+		worker {
+			file "{$APP_PUBLIC_PATH}/frankenphp-worker.php"
+			{$CADDY_SERVER_WORKER_DIRECTIVE}
+			{$CADDY_SERVER_WATCH_DIRECTIVES}
+		}
+	}
+}
+
+{$CADDY_EXTRA_CONFIG}
+
+{$CADDY_SERVER_SERVER_NAME} {
+	log {
+		level {$CADDY_SERVER_LOG_LEVEL}
+
+		format filter {
+			wrap {$CADDY_SERVER_LOGGER}
+			fields {
+				uri query {
+					replace authorization REDACTED
+				}
+			}
+		}
+	}
+
+	route {
+		root * "{$APP_PUBLIC_PATH}"
+		encode zstd br gzip
+
+		{$CADDY_SERVER_EXTRA_DIRECTIVES}
+
+		# Browser-friendly Prometheus metrics. The admin endpoint (:2019/metrics)
+		# rejects browser navigations (Sec-Fetch-Mode triggers its origin check),
+		# so expose the same metrics on the app listener too.
+		metrics /metrics
+
+		php_server {
+			index frankenphp-worker.php
+			try_files {path} frankenphp-worker.php
+			resolve_root_symlink
+		}
+	}
+}

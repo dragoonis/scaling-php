@@ -60,31 +60,13 @@ export const options = {
     scenarios,
 };
 
-// Load a pool of real product IDs once, up front, so every request hits a valid
-// row. We always pull this list from FPM (8088) - it's the most resilient runtime,
-// so warm-up never stalls even when we're stress-testing the worker.
 export function setup() {
-    const base = TARGETS.fpm;
-    console.log(`Ember wave warming up - fetching product IDs from ${base}/en/products/db`);
-
-    const res = http.get(`${base}/en/products/db`);
-    if (res.status !== 200) {
-        console.error(`Could not load product IDs (status ${res.status}). Did you run 'make setup'?`);
-        return { ids: [] };
-    }
-
-    const data = res.json();
-    const ids = (data.products || []).map((p) => p.id);
-    console.log(`Loaded ${ids.length} product IDs. Targets: ${enabled.join(', ')}`);
-    return { ids };
+    console.log(`Ember wave targets: ${enabled.join(', ')}`);
+    return {};
 }
 
 function hit(base, data) {
-    if (!data.ids || data.ids.length === 0) {
-        return;
-    }
-    const id = data.ids[(__VU + __ITER) % data.ids.length];
-    const res = http.get(`${base}/en/products/db/${id}`);
+    const res = http.get(`${base}/`);
     check(res, { 'status is 200': (r) => r.status === 200 });
     sleep(0.02); // tiny pause; each VU still hammers ~40+ req/s
 }
