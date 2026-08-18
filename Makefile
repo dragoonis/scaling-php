@@ -114,6 +114,12 @@ down-exporter:
 app-shell:
 	docker compose exec -it app bash
 
+fpm-htop: ## 🔍 Live htop inside the app container, filtered to the PHP-FPM processes
+	docker compose exec -it app htop -F php-fpm
+
+fpm-ps: ## 🔍 One-shot list of the PHP-FPM processes inside the app container
+	docker compose exec app bash -c "ps aux | grep [p]hp-fpm"
+
 franken-shell:
 	docker compose exec -it franken bash
 

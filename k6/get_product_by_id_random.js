@@ -11,8 +11,8 @@ export let options = {
 };
 
 export function setup() {
-    console.log(`Fetching product IDs from ${BASE_URL}/en/products/db...`);
-    const response = http.get(BASE_URL + '/en/products/db');
+    console.log(`Fetching product IDs from ${BASE_URL}/products...`);
+    const response = http.get(BASE_URL + '/products');
 
     if (response.status !== 200) {
         console.error(`Failed to fetch products. Status: ${response.status}`);
@@ -39,7 +39,7 @@ export default function (data) {
 
     const index = (__VU - 1 + __ITER) % data.productIds.length;
     const productId = data.productIds[index];
-    const url = BASE_URL + '/en/products/db/' + productId;
+    const url = BASE_URL + '/products/' + productId;
 
     const res = http.get(url);
 
@@ -86,7 +86,7 @@ export function handleSummary(data) {
     const duration = data.state.testRunDurationMs / 1000;
 
     console.log('\n========================================');
-    console.log(`wrk-style benchmark @ ${BASE_URL}/en/products/db/{id}`);
+    console.log(`wrk-style benchmark @ ${BASE_URL}/products/{id}`);
     console.log('========================================');
     console.log(`  100 virtual users, 10000 iterations`);
     console.log(`  Cycling through product IDs from database`);

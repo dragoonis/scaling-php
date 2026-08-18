@@ -12,8 +12,8 @@ export let options = {
 };
 
 export function setup() {
-    console.log(`Fetching product IDs from ${BASE_URL}/en/products/projection...`);
-    const response = http.get(BASE_URL + '/en/products/projection');
+    console.log(`Fetching product IDs from ${BASE_URL}/products/cached...`);
+    const response = http.get(BASE_URL + '/products/cached');
 
     if (response.status !== 200) {
         console.error(`Failed to fetch products. Status: ${response.status}`);
@@ -41,7 +41,7 @@ export default function (data) {
     // Cycle through product IDs sequentially
     const index = (__VU - 1 + __ITER) % data.productIds.length;
     const productId = data.productIds[index];
-    const url = BASE_URL + '/en/products/projection/' + productId;
+    const url = BASE_URL + '/products/cached/' + productId;
 
     const res = http.get(url);
 
@@ -88,7 +88,7 @@ export function handleSummary(data) {
     const duration = data.state.testRunDurationMs / 1000;
 
     console.log('\n========================================');
-    console.log(`wrk-style benchmark @ ${BASE_URL}/en/products/projection/{id}`);
+    console.log(`wrk-style benchmark @ ${BASE_URL}/products/cached/{id}`);
     console.log('========================================');
     console.log(`  100 virtual users, 10000 iterations`);
     console.log(`  Cycling through product IDs from projection`);

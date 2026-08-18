@@ -29,3 +29,4 @@ Thumbs.db
 **/caddy
 frankenphp
 frankenphp-worker.php
+k6/report-*.html

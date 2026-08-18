@@ -1,5 +1,3 @@
-> ⚠️ **Legacy doc:** written for the Symfony version of this demo. The commands and endpoints may not match the Laravel branch yet.
-
 # PHP-FPM End-to-End Guide
 
 ## Boot Normal PHP with FPM
@@ -20,13 +18,15 @@ PHP-FPM uses a process manager to handle incoming requests efficiently. The conf
 
 ### Key Configuration Settings
 
+This demo ships with (see `docker/fpm.conf`):
+
 ```ini
 pm = dynamic                    # Process manager type (static, dynamic, ondemand)
-pm.max_children = 50            # Maximum number of child processes
+pm.max_children = 300           # Maximum number of child processes
 pm.start_servers = 5            # Number of children created on startup
 pm.min_spare_servers = 5        # Minimum idle processes
-pm.max_spare_servers = 35       # Maximum idle processes
-pm.max_requests = 500           # Requests before process restart (helps with memory leaks)
+pm.max_spare_servers = 50       # Maximum idle processes
+pm.max_requests = 1000          # Requests before process restart (helps with memory leaks)
 pm.status_path = /fpm-status    # FPM status endpoint
 ```
 
@@ -39,7 +39,14 @@ pm.status_path = /fpm-status    # FPM status endpoint
 
 > Note: if you configure pm.min_spare_servers = 5 more than pm.start_servers = 5 it will fail
 
-When you run `htop` or `ps aux | grep php-fpm`, you'll see:
+Watch it live from this repo with:
+
+```bash
+make fpm-htop   # htop inside the app container, filtered to php-fpm
+make fpm-ps     # one-shot process list, no TUI
+```
+
+You'll see:
 
 ![img.png](docs/images/fpm-process.png)
 
@@ -259,6 +266,8 @@ ps -ylC php-fpm --sort:rss
 ```bash
 watch -n 1 'ps aux | grep php-fpm'
 ```
+
+Or from the host, without entering the container: `make fpm-htop`.
 
 **Count active vs idle processes:**
 ```bash
