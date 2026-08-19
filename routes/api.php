@@ -6,6 +6,50 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/metrics', function () {
+    $status = function_exists('opcache_get_status') ? opcache_get_status(false) : false;
+    if ($status === false) {
+        return response("opcache_enabled 0\n", 200)->header('Content-Type', 'text/plain; version=0.0.4');
+    }
+
+    $stats = $status['opcache_statistics'] ?? [];
+    $memory = $status['memory_usage'] ?? [];
+    $interned = $status['interned_strings_usage'] ?? [];
+    $jit = $status['jit'] ?? [];
+
+    $metrics = [
+        ['opcache_enabled', 'gauge', ! empty($status['opcache_enabled']) ? 1 : 0],
+        ['opcache_cache_full', 'gauge', ! empty($status['cache_full']) ? 1 : 0],
+        ['opcache_restart_pending', 'gauge', ! empty($status['restart_pending']) ? 1 : 0],
+        ['opcache_restart_in_progress', 'gauge', ! empty($status['restart_in_progress']) ? 1 : 0],
+        ['opcache_memory_used_bytes', 'gauge', $memory['used_memory'] ?? 0],
+        ['opcache_memory_free_bytes', 'gauge', $memory['free_memory'] ?? 0],
+        ['opcache_memory_wasted_bytes', 'gauge', $memory['wasted_memory'] ?? 0],
+        ['opcache_interned_strings_used_memory_bytes', 'gauge', $interned['used_memory'] ?? 0],
+        ['opcache_interned_strings_count', 'gauge', $interned['number_of_strings'] ?? 0],
+        ['opcache_hit_ratio', 'gauge', ($stats['opcache_hit_rate'] ?? 0) / 100],
+        ['opcache_hits_total', 'counter', $stats['hits'] ?? 0],
+        ['opcache_misses_total', 'counter', $stats['misses'] ?? 0],
+        ['opcache_num_cached_scripts', 'gauge', $stats['num_cached_scripts'] ?? 0],
+        ['opcache_num_cached_keys', 'gauge', $stats['num_cached_keys'] ?? 0],
+        ['opcache_max_cached_keys', 'gauge', $stats['max_cached_keys'] ?? 0],
+        ['opcache_oom_restarts_total', 'counter', $stats['oom_restarts'] ?? 0],
+        ['opcache_hash_restarts_total', 'counter', $stats['hash_restarts'] ?? 0],
+        ['opcache_manual_restarts_total', 'counter', $stats['manual_restarts'] ?? 0],
+        ['opcache_jit_enabled', 'gauge', ! empty($jit['enabled']) ? 1 : 0],
+        ['opcache_jit_on', 'gauge', ! empty($jit['on']) ? 1 : 0],
+        ['opcache_jit_buffer_size_bytes', 'gauge', $jit['buffer_size'] ?? 0],
+        ['opcache_jit_opt_level', 'gauge', $jit['opt_level'] ?? 0],
+    ];
+
+    $out = '';
+    foreach ($metrics as [$name, $type, $value]) {
+        $out .= "# TYPE $name $type\n$name $value\n";
+    }
+
+    return response($out, 200)->header('Content-Type', 'text/plain; version=0.0.4');
+});
+
 Route::get('/opcache-stats', function () {
     return opcache_get_status(false) ?: ['error' => 'opcache disabled'];
 });
