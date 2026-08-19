@@ -161,7 +161,7 @@ class IgbinaryBench extends Command
 
         $out = [];
         foreach ($modes as $mode => $serializer) {
-            $r = new Redis();
+            $r = new Redis;
             $r->connect(env('REDIS_HOST', 'redis'), (int) env('REDIS_PORT', 6379));
             $r->select(9);
             $r->flushDB();

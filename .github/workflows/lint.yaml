@@ -5,99 +5,61 @@ on:
     push:
         branches:
             - main
-
-env:
-    fail-fast: true
+            - laravel
 
 permissions:
     contents: read
 
 jobs:
-    php-cs-fixer:
-        name: PHP-CS-Fixer
+    pint:
+        name: Pint
         runs-on: ubuntu-latest
         steps:
             - name: "Checkout code"
               uses: actions/checkout@v4
 
-            - name: PHP-CS-Fixer
-              uses: docker://oskarstark/php-cs-fixer-ga
-              with:
-                  args: --diff --dry-run
-
-    linters:
-        name: Linters
-        runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                php-version: ['8.4']
-
-        steps:
-            - name: "Checkout code"
-              uses: actions/checkout@v4
-
-            - name: "Install PHP with extensions"
+            - name: "Install PHP"
               uses: shivammathur/setup-php@v2
               with:
                   coverage: "none"
-                  extensions: intl
-                  php-version: ${{ matrix.php-version }}
+                  extensions: "intl, mbstring"
+                  php-version: '8.4'
                   tools: composer:v2
-
-            - name: "Set composer cache directory"
-              id: composer-cache
-              run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-            - name: "Cache composer"
-              uses: actions/cache@v4
-              with:
-                  path: ${{ steps.composer-cache.outputs.dir }}
-                  key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-                  restore-keys: ${{ runner.os }}-composer-
 
             - name: "Install dependencies"
               run: composer install --ansi --no-interaction --no-progress
 
-            - name: Install PHPUnit
-              id: install
-              run: vendor/bin/simple-phpunit install
+            - name: "Pint (Laravel code style)"
+              run: vendor/bin/pint --test
 
-            - name: Lint YAML files
-              if: always() && steps.install.outcome == 'success'
-              run: ./bin/console lint:yaml config --parse-tags
+    linters:
+        name: Linters
+        runs-on: ubuntu-latest
 
-            - name: Lint Twig templates
-              if: always() && steps.install.outcome == 'success'
-              run: ./bin/console lint:twig templates --env=prod
+        steps:
+            - name: "Checkout code"
+              uses: actions/checkout@v4
 
-            - name: Lint XLIFF translations
-              if: always() && steps.install.outcome == 'success'
-              run: ./bin/console lint:xliff translations
+            - name: "Install PHP"
+              uses: shivammathur/setup-php@v2
+              with:
+                  coverage: "none"
+                  extensions: "intl, mbstring, pdo_sqlite"
+                  php-version: '8.4'
+                  tools: composer:v2
 
-            - name: Lint Parameters and Services
-              if: always() && steps.install.outcome == 'success'
-              run: ./bin/console lint:container --no-debug
-
-            - name: Lint Doctrine entities
-              if: always() && steps.install.outcome == 'success'
-              run: ./bin/console doctrine:schema:validate --skip-sync -vvv --no-interaction
+            - name: "Install dependencies"
+              run: composer install --ansi --no-interaction --no-progress
 
             - name: Lint Composer config
-              if: always() && steps.install.outcome == 'success'
               run: composer validate --strict
 
-            # These advisories are upstream Symfony CVEs whose fixes land in 7.4.x;
-            # this demo is pinned to 7.3.*, so we report them without failing the build.
+            - name: Boot check (config + routes resolve)
+              run: |
+                  php artisan config:cache
+                  php artisan route:cache
+                  php artisan route:list --json > /dev/null
+
             - name: Check if any dependencies are compromised
-              if: always() && steps.install.outcome == 'success'
               continue-on-error: true
               run: composer audit
-
-            # phpstan-symfony reads the dev service-container XML; build it first.
-            - name: Warm the dev container for PHPStan
-              if: always() && steps.install.outcome == 'success'
-              run: php bin/console cache:warmup --env=dev
-
-            - name: Run PHPStan
-              if: always() && steps.install.outcome == 'success'
-              run: ./vendor/bin/phpstan analyze

@@ -5,13 +5,7 @@ on:
     push:
         branches:
             - main
-
-env:
-    fail-fast: true
-    # PHPUnit 11 removed the "-v" flag, so keep this empty.
-    PHPUNIT_FLAGS: ""
-    SYMFONY_PHPUNIT_DIR: "$HOME/symfony-bridge/.phpunit"
-    SYMFONY_DEPRECATIONS_HELPER: 'max[indirect]=52'
+            - laravel
 
 permissions:
     contents: read
@@ -27,7 +21,6 @@ jobs:
                 operating-system: ['ubuntu-latest']
                 php-version: ['8.4']
                 include:
-                    # TODO: change this to 'macos-latest' on June 2024, when '14' will become 'latest'
                     - operating-system: 'macos-14'
                       php-version: '8.4'
                     - operating-system: 'windows-latest'
@@ -41,12 +34,9 @@ jobs:
               uses: shivammathur/setup-php@v2
               with:
                   coverage: "none"
-                  extensions: "intl, mbstring, pdo_sqlite, zip"
+                  extensions: "intl, mbstring, pdo_sqlite, zip, igbinary, redis"
                   php-version: ${{ matrix.php-version }}
                   tools: composer:v2
-
-            - name: "Add PHPUnit matcher"
-              run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
             - name: "Set composer cache directory"
               id: composer-cache
@@ -63,20 +53,5 @@ jobs:
             - name: "Install dependencies"
               run: composer install --ansi --no-interaction --no-progress
 
-            # The bootswatch theme files aren't vendored, so sass/asset compile warns;
-            # the test suite doesn't need built assets, so don't fail the job on it.
-            - name: "Build and compile assets"
-              continue-on-error: true
-              run: |
-                php bin/console importmap:install
-                php bin/console sass:build
-                php bin/console asset-map:compile
-
-            - name: "Install PHPUnit"
-              run: vendor/bin/simple-phpunit install
-
-            - name: "PHPUnit version"
-              run: vendor/bin/simple-phpunit --version
-
             - name: "Run tests"
-              run: vendor/bin/simple-phpunit ${{ env.PHPUNIT_FLAGS }}
+              run: php artisan test
