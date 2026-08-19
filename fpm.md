@@ -100,6 +100,10 @@ Average PHP process: 50 MB
 pm.max_children = (4096 - 1024) / 50 = 61 processes
 ```
 
+![PHP-FPM pool sizing math](docs/images/fpm-sizing-math.png)
+
+Interactive version: [docs/diagrams/fpm-sizing-math.html](docs/diagrams/fpm-sizing-math.html).
+
 ### Production Calculation (16GB Server)
 
 **Server Specs:** 16GB RAM, 12GB reserved for applications
