@@ -126,6 +126,22 @@ fpm-ps: ## 🔍 One-shot list of the PHP-FPM processes inside the app container
 fpm-reload: ## ♻️  Graceful FPM reload (SIGUSR2): re-reads php.ini incl opcache, zero dropped requests
 	docker compose exec app pkill -USR2 -o php-fpm
 
+opcache-status: ## ♻️  Show current opcache memory limit, usage and cached scripts
+	@docker compose exec -T app php -r 'echo "memory_consumption: ", ini_get("opcache.memory_consumption"), "M\n";'
+	@curl -s http://localhost:8088/metrics | grep -E "^opcache_(memory_used_bytes|memory_free_bytes|num_cached_scripts) "
+
+opcache-shrink: ## ♻️  LIVE demo: halve opcache memory (192->96) via SIGUSR2, no restart
+	perl -pi -e 's/opcache.memory_consumption=192/opcache.memory_consumption=96/' docker/symfony.prod.ini
+	$(MAKE) fpm-reload
+	@sleep 3
+	$(MAKE) opcache-status
+
+opcache-restore: ## ♻️  Put opcache memory back to 192 the same live way
+	perl -pi -e 's/opcache.memory_consumption=96/opcache.memory_consumption=192/' docker/symfony.prod.ini
+	$(MAKE) fpm-reload
+	@sleep 3
+	$(MAKE) opcache-status
+
 fpm-recycle-demo: ## 🔁 Swap in pm.max_requests=50 so worker recycling is visible in fpm-htop
 	FPM_CONF=fpm.demo.conf docker compose up -d app
 

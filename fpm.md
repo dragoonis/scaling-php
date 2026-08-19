@@ -148,15 +148,15 @@ The php.ini is bind-mounted, so edits on the host apply on reload:
 # terminal 1 - keep load running so the audience sees it stay alive
 EMBER_TARGETS=fpm make ember-load
 
-# terminal 2 - halve the opcache memory live
-sed -i '' 's/opcache.memory_consumption=192/opcache.memory_consumption=96/' docker/symfony.prod.ini
-make fpm-reload
+# terminal 2 - halve the opcache memory live (edits the ini + SIGUSR2 + prints the result)
+make opcache-shrink
 ```
 
 Watch the Grafana OPcache row: the Memory Usage Breakdown ceiling drops from 192MiB to
 96MiB, cached scripts reset and refill within seconds, hit ratio dips and recovers.
 Measured during a 660 req/s run: 8 failed requests out of 16,898 (0.04%) at the reload
-instant, then clean. Put the value back with the reverse sed + `make fpm-reload`.
+instant, then clean. Put the value back live with `make opcache-restore`, and check the
+current state anytime with `make opcache-status`.
 
 > ⚠️ It is SIGUSR2, not SIGHUP. SIGHUP is nginx's reload signal - php-fpm does not
 > handle it and **dies** (we tested: the container went down). USR1 reopens logs,
