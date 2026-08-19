@@ -200,6 +200,9 @@ endif
 open: ## 🌐 Open the app in your default browser (macOS / Linux / WSL / Windows)
 	@bash bin/open-url.sh "$(URL)"
 
+preflight: ## 🛫 Check everything is demo-ready (runtimes, data, metrics, tools)
+	@bash bin/preflight.sh
+
 urls: ## 🌐 Print all demo URLs (Ctrl/Cmd+click to open)
 	@echo "FPM app            http://localhost:8088"
 	@echo "FrankenPHP classic http://localhost:8080"
