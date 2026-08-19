@@ -8,7 +8,9 @@ RUN install-php-extensions \
 	zip \
 	opcache \
 	pcntl \
-	pdo_mysql
+	pdo_mysql \
+	igbinary \
+	redis
 
 COPY --chown=www-data:www-data ./docker/symfony.prod.ini $PHP_INI_DIR/php.ini
 

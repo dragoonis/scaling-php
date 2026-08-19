@@ -71,6 +71,7 @@ make up-exporter  # php-fpm metrics exporter
   `OCTANE_WORKERS=28 docker compose up -d franken-worker`
 - FrankenPHP classic: **[frankenphp.md](frankenphp.md)**
 - PHP-FPM pool sizing: **[fpm.md](fpm.md)**
+- Serializer choice for Redis and sessions: **[igbinary.md](igbinary.md)**
 
 ## Gotchas that will bite you
 
