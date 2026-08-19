@@ -123,6 +123,9 @@ fpm-htop: ## 🔍 Live htop inside the app container, filtered to the PHP-FPM pr
 fpm-ps: ## 🔍 One-shot list of the PHP-FPM processes inside the app container
 	docker compose exec app bash -c "ps aux | grep [p]hp-fpm"
 
+fpm-reload: ## ♻️  Graceful FPM reload (SIGUSR2): re-reads php.ini incl opcache, zero dropped requests
+	docker compose exec app pkill -USR2 -o php-fpm
+
 fpm-recycle-demo: ## 🔁 Swap in pm.max_requests=50 so worker recycling is visible in fpm-htop
 	FPM_CONF=fpm.demo.conf docker compose up -d app
 

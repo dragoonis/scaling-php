@@ -138,6 +138,30 @@ Use the interactive calculator at https://spot13.com/pmcalculator/ to determine 
 
 Input your server specifications to get recommended FPM settings.
 
+## Live opcache retune - change php.ini in production without restarting FPM
+
+PHP-FPM's **SIGUSR2** does a graceful reload: the master stays up, the listen socket is
+kept, workers are recycled, and php.ini (including every opcache setting) is re-read.
+The php.ini is bind-mounted, so edits on the host apply on reload:
+
+```bash
+# terminal 1 - keep load running so the audience sees it stay alive
+EMBER_TARGETS=fpm make ember-load
+
+# terminal 2 - halve the opcache memory live
+sed -i '' 's/opcache.memory_consumption=192/opcache.memory_consumption=96/' docker/symfony.prod.ini
+make fpm-reload
+```
+
+Watch the Grafana OPcache row: the Memory Usage Breakdown ceiling drops from 192MiB to
+96MiB, cached scripts reset and refill within seconds, hit ratio dips and recovers.
+Measured during a 660 req/s run: 8 failed requests out of 16,898 (0.04%) at the reload
+instant, then clean. Put the value back with the reverse sed + `make fpm-reload`.
+
+> ⚠️ It is SIGUSR2, not SIGHUP. SIGHUP is nginx's reload signal - php-fpm does not
+> handle it and **dies** (we tested: the container went down). USR1 reopens logs,
+> USR2 reloads, QUIT is graceful stop.
+
 ## K6 Load Testing
 
 Run k6 load tests against the FPM endpoint:

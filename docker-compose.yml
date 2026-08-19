@@ -11,6 +11,7 @@ services:
     volumes:
       - .:/var/www/html
       - ./docker/${FPM_CONF:-fpm.conf}:/usr/local/etc/php-fpm.d/zz-docker.conf
+      - ./docker/symfony.prod.ini:/usr/local/etc/php/conf.d/symfony.prod.ini
     networks:
       - app-net
 
