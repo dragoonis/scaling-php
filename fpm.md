@@ -258,6 +258,14 @@ curl -s http://localhost:9114/metrics | grep phpfpm_
 Prometheus scrapes it as job `cbox-fpm-exporter`. Written by Sylvester Damgaard
 (ex-Laravel); it can also autodiscover every pool on a box via `php-fpm -tt`.
 
+It has its own Grafana dashboard, based on the one shipped in their repo and
+extended with the per-worker request cost panels:
+**http://localhost:3000/d/cbox-fpm-exporter** (provisioned from
+`grafana/provisioning/dashboards/cbox-fpm-exporter-dashboard.json`). Panels:
+active vs idle workers, listen queue vs the kernel backlog limit,
+max_children_reached hits, accepted connections/s, and peak memory + CPU per
+request across workers.
+
 ## Prometheus Integration
 
 Start Prometheus to scrape FPM exporter metrics:
