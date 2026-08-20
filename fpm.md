@@ -237,6 +237,27 @@ Go to **URL:** http://localhost:9253/metrics
 - `phpfpm_slow_requests` - Number of slow requests
 - `phpfpm_accepted_connections` - Total accepted connections
 
+### The production-grade alternative: cboxdk/fpm-exporter
+
+We also run [cboxdk/fpm-exporter](https://cbox.dk/packages/fpm-exporter) side by
+side (service `cbox-fpm-exporter`, port **9114**, config in
+`docker/fpm-exporter.yaml`). Same idea as the hipages exporter, but it adds
+per-process detail the status page alone does not give you:
+
+- `phpfpm_process_last_request_cpu{pid=...}` and
+  `phpfpm_process_last_request_memory{pid=...}` per worker
+- `phpfpm_listen_queue_length` (our 4096 backlog, straight from FPM)
+- per-pool opcache metrics when it can inject its probe script (needs a shared
+  filesystem with FPM, so in this two-container setup that part stays off and
+  our own `/metrics` route covers opcache instead)
+
+```bash
+curl -s http://localhost:9114/metrics | grep phpfpm_
+```
+
+Prometheus scrapes it as job `cbox-fpm-exporter`. Written by Sylvester Damgaard
+(ex-Laravel); it can also autodiscover every pool on a box via `php-fpm -tt`.
+
 ## Prometheus Integration
 
 Start Prometheus to scrape FPM exporter metrics:

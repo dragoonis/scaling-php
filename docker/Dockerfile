@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y git
 
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
-RUN install-php-extensions igbinary redis
+RUN install-php-extensions igbinary redis pcntl
 
 # Install build dependencies for OpenSwoole
 RUN apt-get update && apt-get install -y \

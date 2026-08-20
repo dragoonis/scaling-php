@@ -155,17 +155,20 @@ class IgbinaryBench extends Command
     private function benchRedis(array $session, int $ops): array
     {
         $modes = [
-            'php_serializer' => Redis::SERIALIZER_PHP,
-            'igbinary_serializer' => Redis::SERIALIZER_IGBINARY,
+            'php_serializer' => [Redis::SERIALIZER_PHP, Redis::COMPRESSION_NONE],
+            'igbinary_serializer' => [Redis::SERIALIZER_IGBINARY, Redis::COMPRESSION_NONE],
+            'igbinary_lz4' => [Redis::SERIALIZER_IGBINARY, Redis::COMPRESSION_LZ4],
+            'igbinary_zstd' => [Redis::SERIALIZER_IGBINARY, Redis::COMPRESSION_ZSTD],
         ];
 
         $out = [];
-        foreach ($modes as $mode => $serializer) {
+        foreach ($modes as $mode => [$serializer, $compression]) {
             $r = new Redis;
             $r->connect(env('REDIS_HOST', 'redis'), (int) env('REDIS_PORT', 6379));
             $r->select(9);
             $r->flushDB();
             $r->setOption(Redis::OPT_SERIALIZER, $serializer);
+            $r->setOption(Redis::OPT_COMPRESSION, $compression);
 
             $t = hrtime(true);
             for ($i = 0; $i < $ops; $i++) {

@@ -72,6 +72,23 @@ make up-exporter  # php-fpm metrics exporter
 - FrankenPHP classic: **[frankenphp.md](frankenphp.md)**
 - PHP-FPM pool sizing: **[fpm.md](fpm.md)**
 - Serializer choice for Redis and sessions: **[igbinary.md](igbinary.md)**
+- SLA-driven queue worker autoscaling: **[queues.md](queues.md)** - try
+  `make queue-autoscale`, `make queue-watch`, `make queue-burst`
+
+## Five numbers to check monday morning
+
+The closing-slide checklist ([docs/images/monday-checklist.png](docs/images/monday-checklist.png)),
+each number is one command in this repo:
+
+| # | number | healthy | check it here |
+|---|---|---|---|
+| 1 | max children reached | 0 | `curl localhost:8088/fpm-status` (or exporter :9114) |
+| 2 | listen queue | 0 | `curl localhost:8088/fpm-status`, the queue PHP never sees |
+| 3 | opcache hit rate + wasted % | >99%, <5% | `make opcache-status` or `curl :8088/metrics` |
+| 4 | memory per worker (RSS) | stable | `make fpm-ps`, the unit behind max_children |
+| 5 | oldest job age | inside your SLA | `make queue-debug`, age matters, depth lies |
+
+Details: 1-2 and 4 in [fpm.md](fpm.md), 3 in [fpm.md](fpm.md) + [grafana-dashboard.md](grafana-dashboard.md), 5 in [queues.md](queues.md).
 
 ## Gotchas that will bite you
 
@@ -84,6 +101,8 @@ make up-exporter  # php-fpm metrics exporter
 
 ## Slide assets
 
-Dark-themed diagrams in `docs/images/` (benchmark chart, disposable workers, FPM and
-OPcache metrics pipelines, FrankenPHP tuning), interactive HTML versions in
-`docs/diagrams/`.
+Dark-themed slide graphics in `docs/images/` (runtime benchmark, disposable workers,
+metrics pipelines, FrankenPHP tuning, FPM sizing math, igbinary, queue sizing and
+the failure fuse, the monday checklist), HTML sources in `docs/diagrams/`, and
+ChatGPT prompts to regenerate or restyle any of them in
+[docs/diagrams/PROMPTS.md](docs/diagrams/PROMPTS.md).

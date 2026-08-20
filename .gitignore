@@ -30,3 +30,4 @@ Thumbs.db
 frankenphp
 frankenphp-worker.php
 k6/report-*.html
+storage/framework/queue-autoscale/

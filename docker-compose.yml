@@ -77,6 +77,19 @@ services:
     networks:
       - app-net
 
+  cbox-fpm-exporter:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.fpm-exporter
+    depends_on:
+      - app
+    volumes:
+      - ./docker/fpm-exporter.yaml:/etc/fpm-exporter.yaml:ro
+    ports:
+      - "9114:9114"
+    networks:
+      - app-net
+
   prometheus:
     image: prom/prometheus:v2.53.4
     volumes:

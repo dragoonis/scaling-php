@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scaling Toolbox</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem; color: white; }
+    .slide { max-width: 1450px; text-align: center; }
+    .title { font-size: 2.6rem; font-weight: 700; margin-bottom: 0.8rem; }
+    .subtitle { color: #94a3b8; font-size: 1.15rem; margin-bottom: 3rem; }
+    .cards { display: flex; gap: 1.75rem; justify-content: center; }
+    .card { flex: 1; background: rgba(15, 23, 42, 0.7); border: 1px solid #1e293b; border-radius: 1rem; padding: 1.9rem 2rem; text-align: left; display: flex; flex-direction: column; }
+    .card .manual { font-size: 0.95rem; color: #fb7185; margin-bottom: 1rem; min-height: 3.4rem; }
+    .card .manual em { font-style: normal; color: #64748b; display: block; font-size: 0.8rem; letter-spacing: 0.1em; margin-bottom: 0.35rem; }
+    .card .arrow { color: #64748b; font-size: 1.2rem; margin-bottom: 1rem; }
+    .card .pkg { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.9rem; }
+    .card.exporter .pkg { color: #fbbf24; }
+    .card.init .pkg { color: #22d3ee; }
+    .card.autoscale .pkg { color: #34d399; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.95rem; line-height: 1.65; }
+    .card li::before { content: "\2022  "; color: #475569; }
+    .credit { margin-top: 2.8rem; color: #94a3b8; font-size: 1.05rem; }
+    .credit b { color: white; }
+    .foot { margin-top: 1rem; color: #475569; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="title">you do not have to hand-roll this</div>
+    <div class="subtitle">everything in this talk, packaged: one Danish ex-Laravel engineer ships the whole stack as open source</div>
+    <div class="cards">
+      <div class="card exporter">
+        <div class="manual"><em>THE MANUAL WAY (THIS TALK)</em>status page + a PHP metrics route + wiring Prometheus yourself</div>
+        <div class="arrow">&darr;</div>
+        <div class="pkg">cboxdk/fpm-exporter</div>
+        <ul>
+          <li>Go sidecar, speaks FastCGI straight to the FPM socket</li>
+          <li>pool metrics + per-pool OPcache, zero app code</li>
+          <li>ships Grafana dashboards + alert rules</li>
+          <li>~32 MB RAM, autodiscovers pools</li>
+        </ul>
+      </div>
+      <div class="card init">
+        <div class="manual"><em>THE MANUAL WAY (THIS TALK)</em>the max_children formula, computed by hand per box</div>
+        <div class="arrow">&darr;</div>
+        <div class="pkg">cboxdk/init</div>
+        <ul>
+          <li>PID 1 for PHP containers (signals, zombie reaping)</li>
+          <li>reads cgroup RAM/CPU limits at boot</li>
+          <li>auto-computes pm.max_children from app profiles</li>
+          <li>health checks + Prometheus built in</li>
+        </ul>
+      </div>
+      <div class="card autoscale">
+        <div class="manual"><em>THE MANUAL WAY (EVERYWHERE)</em>supervisor numprocs=10, picked by vibes</div>
+        <div class="arrow">&darr;</div>
+        <div class="pkg">cboxdk/laravel-queue-autoscale</div>
+        <ul>
+          <li>declare an SLA: "picked up within 30s"</li>
+          <li>worker count derived via Little's Law, every 5s</li>
+          <li>backlog drain + failure fuse for spikes/outages</li>
+          <li>capped by measured host RAM/CPU</li>
+        </ul>
+      </div>
+    </div>
+    <div class="credit"><b>cbox.dk</b> &middot; Sylvester Damgaard &middot; worked on the queue manager at Laravel until 2025</div>
+    <div class="foot">this demo repo teaches the mechanics &middot; these tools run them in production</div>
+  </div>
+</body>
+</html>

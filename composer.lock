@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f3c531f6301e15aa4bc5458e202617f7",
+    "content-hash": "4e0909c95535004b61c3d39c0920198b",
     "packages": [
         {
             "name": "brick/math",
@@ -133,6 +133,253 @@
                 }
             ],
             "time": "2024-02-09T16:56:22+00:00"
+        },
+        {
+            "name": "cboxdk/laravel-queue-autoscale",
+            "version": "v4.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cboxdk/laravel-queue-autoscale.git",
+                "reference": "ca5d8a707c7773389adb5045eceb8074094eb2c0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cboxdk/laravel-queue-autoscale/zipball/ca5d8a707c7773389adb5045eceb8074094eb2c0",
+                "reference": "ca5d8a707c7773389adb5045eceb8074094eb2c0",
+                "shasum": ""
+            },
+            "require": {
+                "cboxdk/laravel-queue-metrics": "^3.0",
+                "ext-pcntl": "*",
+                "ext-posix": "*",
+                "illuminate/contracts": "^12.0||^13.0",
+                "php": "^8.4|^8.5",
+                "symfony/process": "^7.0||^8.0"
+            },
+            "require-dev": {
+                "aws/aws-sdk-php": "^3.390",
+                "cboxdk/laravel-telemetry": "^1.2.0",
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.14",
+                "nunomaduro/collision": "^8.8",
+                "orchestra/testbench": "^10.0.0||^11.0.0",
+                "pestphp/pest": "^4.4.1",
+                "pestphp/pest-plugin-arch": "^4.0",
+                "pestphp/pest-plugin-laravel": "^4.1",
+                "phpstan/extension-installer": "^1.4",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0"
+            },
+            "suggest": {
+                "cboxdk/laravel-telemetry": "Publishes scaling decisions, SLA breach state and cluster gauges to OpenTelemetry via the telemetry pipeline."
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "LaravelQueueAutoscale": "Cbox\\LaravelQueueAutoscale\\Facades\\LaravelQueueAutoscale"
+                    },
+                    "providers": [
+                        "Cbox\\LaravelQueueAutoscale\\LaravelQueueAutoscaleServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Cbox\\LaravelQueueAutoscale\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sylvester Damgaard",
+                    "email": "sn@cbox.dk",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Intelligent, predictive autoscaling for Laravel queues with SLA/SLO-based optimization",
+            "homepage": "https://github.com/cboxdk/laravel-queue-autoscale",
+            "keywords": [
+                "autoscale",
+                "autoscaling",
+                "cbox",
+                "laravel",
+                "littles-law",
+                "predictive",
+                "queue",
+                "sla",
+                "slo",
+                "worker"
+            ],
+            "support": {
+                "issues": "https://github.com/cboxdk/laravel-queue-autoscale/issues",
+                "source": "https://github.com/cboxdk/laravel-queue-autoscale/tree/v4.0.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/cboxdk",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-08-14T11:10:09+00:00"
+        },
+        {
+            "name": "cboxdk/laravel-queue-metrics",
+            "version": "v3.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cboxdk/laravel-queue-metrics.git",
+                "reference": "9b04d3bc88db84696aabb7b96ac0823aa22df5a5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cboxdk/laravel-queue-metrics/zipball/9b04d3bc88db84696aabb7b96ac0823aa22df5a5",
+                "reference": "9b04d3bc88db84696aabb7b96ac0823aa22df5a5",
+                "shasum": ""
+            },
+            "require": {
+                "cboxdk/system-metrics": "^3.0",
+                "illuminate/contracts": "^11.0|^12.0|^13.0",
+                "php": "^8.3|^8.4|^8.5",
+                "spatie/laravel-package-tools": "^1.16",
+                "spatie/laravel-prometheus": "^1.3"
+            },
+            "require-dev": {
+                "cboxdk/laravel-telemetry": "^0.2.0",
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.14",
+                "nunomaduro/collision": "^8.8",
+                "orchestra/testbench": "^11.0.0||^10.0.0||^9.0.0",
+                "pestphp/pest": "^4.0",
+                "pestphp/pest-plugin-arch": "^4.0",
+                "pestphp/pest-plugin-laravel": "^4.0",
+                "phpstan/extension-installer": "^1.4",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0"
+            },
+            "suggest": {
+                "cboxdk/laravel-telemetry": "Publishes queue depth, worker state and baseline gauges plus health/scaling events to OpenTelemetry & Prometheus via the telemetry pipeline."
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "QueueMetrics": "Cbox\\LaravelQueueMetrics\\Facades\\QueueMetrics"
+                    },
+                    "providers": [
+                        "Cbox\\LaravelQueueMetrics\\LaravelQueueMetricsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Cbox\\LaravelQueueMetrics\\": "src/",
+                    "Cbox\\LaravelQueueMetrics\\Database\\Factories\\": "database/factories/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sylvester Damgaard",
+                    "email": "sn@cbox.dk",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Production-ready Laravel queue monitoring with metrics, analytics, and insights",
+            "homepage": "https://github.com/cboxdk/laravel-queue-metrics",
+            "keywords": [
+                "Metrics",
+                "analytics",
+                "cbox",
+                "laravel",
+                "laravel-queue-metrics",
+                "monitoring",
+                "performance",
+                "queue"
+            ],
+            "support": {
+                "issues": "https://github.com/cboxdk/laravel-queue-metrics/issues",
+                "source": "https://github.com/cboxdk/laravel-queue-metrics/tree/v3.2.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/cboxdk",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-07-13T13:47:09+00:00"
+        },
+        {
+            "name": "cboxdk/system-metrics",
+            "version": "v3.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cboxdk/system-metrics.git",
+                "reference": "af7d4e48dd04a3fb65392ee6df3a2a3ee9b6cd4b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cboxdk/system-metrics/zipball/af7d4e48dd04a3fb65392ee6df3a2a3ee9b6cd4b",
+                "reference": "af7d4e48dd04a3fb65392ee6df3a2a3ee9b6cd4b",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.0",
+                "pestphp/pest": "^4.1",
+                "phpstan/phpstan": "^2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Cbox\\SystemMetrics\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sylvester Damgaard",
+                    "email": "sn@cbox.dk",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Peek into your low level system metrics with PHP",
+            "homepage": "https://github.com/cboxdk/system-metrics",
+            "keywords": [
+                "CPU",
+                "linux",
+                "macos",
+                "memory",
+                "monitoring",
+                "observability",
+                "performance",
+                "php",
+                "server-monitoring",
+                "system-metrics"
+            ],
+            "support": {
+                "docs": "https://github.com/cboxdk/system-metrics/blob/main/README.md",
+                "issues": "https://github.com/cboxdk/system-metrics/issues",
+                "source": "https://github.com/cboxdk/system-metrics"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/cboxdk",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-07-13T13:47:06+00:00"
         },
         {
             "name": "dflydev/dot-access-data",
@@ -2795,6 +3042,76 @@
             "time": "2025-12-27T19:41:33+00:00"
         },
         {
+            "name": "promphp/prometheus_client_php",
+            "version": "v2.15.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PromPHP/prometheus_client_php.git",
+                "reference": "e153786bda5ca1d07335a2b5f477742c37195c40"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PromPHP/prometheus_client_php/zipball/e153786bda5ca1d07335a2b5f477742c37195c40",
+                "reference": "e153786bda5ca1d07335a2b5f477742c37195c40",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "php": "^8.2"
+            },
+            "replace": {
+                "endclothing/prometheus_client_php": "*",
+                "jimdo/prometheus_client_php": "*",
+                "lkaemmerling/prometheus_client_php": "*"
+            },
+            "require-dev": {
+                "guzzlehttp/guzzle": "^6.3|^7.0",
+                "phpstan/extension-installer": "^1.0",
+                "phpstan/phpstan": "^1.5.4",
+                "phpstan/phpstan-phpunit": "^1.1.0",
+                "phpstan/phpstan-strict-rules": "^1.1.0",
+                "phpunit/phpunit": "^9.4",
+                "predis/predis": "^2.3",
+                "squizlabs/php_codesniffer": "^3.6 || ^4.0",
+                "symfony/polyfill-apcu": "^1.6"
+            },
+            "suggest": {
+                "ext-apc": "Required if using APCu.",
+                "ext-pdo": "Required if using PDO.",
+                "ext-redis": "Required if using Redis.",
+                "predis/predis": "Required if using Predis.",
+                "promphp/prometheus_push_gateway_php": "An easy client for using Prometheus PushGateway.",
+                "symfony/polyfill-apcu": "Required if you use APCu."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Prometheus\\": "src/Prometheus/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Lukas Kämmerling",
+                    "email": "kontakt@lukas-kaemmerling.de"
+                }
+            ],
+            "description": "Prometheus instrumentation library for PHP applications.",
+            "support": {
+                "issues": "https://github.com/PromPHP/prometheus_client_php/issues",
+                "source": "https://github.com/PromPHP/prometheus_client_php/tree/v2.15.1"
+            },
+            "time": "2026-05-28T07:51:04+00:00"
+        },
+        {
             "name": "psr/clock",
             "version": "1.0.0",
             "source": {
@@ -3482,6 +3799,143 @@
                 "source": "https://github.com/ramsey/uuid/tree/4.9.3"
             },
             "time": "2026-06-18T03:57:49+00:00"
+        },
+        {
+            "name": "spatie/laravel-package-tools",
+            "version": "1.93.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spatie/laravel-package-tools.git",
+                "reference": "d5552849801f2642aea710557463234b59ef65eb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/spatie/laravel-package-tools/zipball/d5552849801f2642aea710557463234b59ef65eb",
+                "reference": "d5552849801f2642aea710557463234b59ef65eb",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^10.0|^11.0|^12.0|^13.0",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.5",
+                "orchestra/testbench": "^8.0|^9.2|^10.0|^11.0",
+                "pestphp/pest": "^2.1|^3.1|^4.0",
+                "phpunit/php-code-coverage": "^10.0|^11.0|^12.0",
+                "phpunit/phpunit": "^10.5|^11.5|^12.5",
+                "spatie/pest-plugin-test-time": "^2.2|^3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Spatie\\LaravelPackageTools\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Freek Van der Herten",
+                    "email": "freek@spatie.be",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Tools for creating Laravel packages",
+            "homepage": "https://github.com/spatie/laravel-package-tools",
+            "keywords": [
+                "laravel-package-tools",
+                "spatie"
+            ],
+            "support": {
+                "issues": "https://github.com/spatie/laravel-package-tools/issues",
+                "source": "https://github.com/spatie/laravel-package-tools/tree/1.93.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/spatie",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-05-19T14:06:37+00:00"
+        },
+        {
+            "name": "spatie/laravel-prometheus",
+            "version": "1.6.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spatie/laravel-prometheus.git",
+                "reference": "754501373782778117ff2a82dae02bb0bcfcd891"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/spatie/laravel-prometheus/zipball/754501373782778117ff2a82dae02bb0bcfcd891",
+                "reference": "754501373782778117ff2a82dae02bb0bcfcd891",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/config": "^12.0|^13.0",
+                "illuminate/contracts": "^12.0|^13.0",
+                "illuminate/support": "^12.0|^13.0",
+                "php": "^8.4",
+                "promphp/prometheus_client_php": "^2.7.1",
+                "spatie/laravel-package-tools": "^1.15.0"
+            },
+            "require-dev": {
+                "ext-redis": "*",
+                "larastan/larastan": "^3.0",
+                "laravel/horizon": "^5.28",
+                "laravel/pint": "^1.10",
+                "mockery/mockery": "^1.6",
+                "orchestra/testbench": "^10.0|^11.0",
+                "pestphp/pest": "^4.4",
+                "pestphp/pest-plugin-arch": "^4.0",
+                "pestphp/pest-plugin-laravel": "^4.1",
+                "spatie/laravel-ray": "^1.32.4",
+                "spatie/pest-plugin-snapshots": "^2.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Prometheus": "Spatie\\Prometheus\\Facades\\Prometheus"
+                    },
+                    "providers": [
+                        "Spatie\\Prometheus\\PrometheusServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Spatie\\Prometheus\\": "src/",
+                    "Spatie\\Prometheus\\Database\\Factories\\": "database/factories/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Freek Van der Herten",
+                    "email": "freek@spatie.be",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Export Laravel metrics to Prometheus",
+            "homepage": "https://github.com/spatie/laravel-prometheus",
+            "keywords": [
+                "laravel",
+                "laravel-prometheus",
+                "spatie"
+            ],
+            "support": {
+                "issues": "https://github.com/spatie/laravel-prometheus/issues",
+                "source": "https://github.com/spatie/laravel-prometheus/tree/1.6.1"
+            },
+            "time": "2026-07-13T08:08:14+00:00"
         },
         {
             "name": "symfony/clock",

@@ -151,6 +151,31 @@ fpm-recycle-restore: ## 🔁 Back to the normal pool config (pm.max_requests=100
 octane-reload: ## 🔁 Gracefully recycle all Octane workers (run it mid-load, zero dropped requests)
 	docker compose exec franken-worker php artisan octane:reload
 
+queue-autoscale: ## 🤖 Run the SLA-driven queue autoscale manager (Ctrl+C to stop)
+	docker compose exec app php artisan queue:autoscale
+
+queue-burst: ## 📨 Dispatch a burst of jobs (COUNT=3000, WORK_MS=100, FAIL=1 to simulate an outage) to the orders queue
+	curl -s "http://localhost:8088/orders/dispatch?count=$(or $(COUNT),3000)&work_ms=$(or $(WORK_MS),100)&fail=$(or $(FAIL),0)"
+	@echo
+
+queue-watch: ## 👀 Watch worker count + backlog while the autoscaler reacts (Ctrl+C to stop)
+	@while true; do \
+		W=$$(docker compose exec app sh -c "ps ax | grep 'artisan queue:work' | grep -v grep | wc -l" | tr -d ' \r'); \
+		S=$$(curl -s "http://localhost:8088/orders/queue-status"); \
+		echo "workers=$$W $$S"; \
+		sleep 2; \
+	done
+
+queue-debug: ## 🔎 Raw queue state as the autoscaler sees it
+	docker compose exec app php artisan queue:autoscale:debug --queue=orders
+
+queue-reset: ## 🧹 Wipe the orders queue clean: pending/failed jobs, counters, fuse state
+	docker compose exec redis redis-cli del laravel-database-queues:orders laravel-database-queues:orders:reserved laravel-database-queues:orders:delayed laravel-database-queues:orders:notify
+	docker compose exec app php artisan tinker --execute="DB::table('failed_jobs')->delete(); echo 'failed_jobs cleared';"
+	docker compose exec redis redis-cli set laravel-database-demo:orders:processed 0
+	docker compose exec app php artisan cache:clear
+	@echo "queue is clean: 0 pending, 0 failed, counter 0, fuse forgotten"
+
 franken-shell:
 	docker compose exec -it franken bash
 

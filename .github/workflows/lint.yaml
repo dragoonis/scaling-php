@@ -22,7 +22,7 @@ jobs:
               uses: shivammathur/setup-php@v2
               with:
                   coverage: "none"
-                  extensions: "fileinfo, intl, mbstring"
+                  extensions: "fileinfo, intl, mbstring, pcntl, posix"
                   php-version: '8.4'
                   tools: composer:v2
 
@@ -44,7 +44,7 @@ jobs:
               uses: shivammathur/setup-php@v2
               with:
                   coverage: "none"
-                  extensions: "fileinfo, intl, mbstring, pdo_sqlite"
+                  extensions: "fileinfo, intl, mbstring, pdo_sqlite, pcntl, posix"
                   php-version: '8.4'
                   tools: composer:v2
 

@@ -1,9 +1,13 @@
 <?php
 
+use App\Jobs\ProcessOrder;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
+use Cbox\LaravelQueueMetrics\Facades\QueueMetrics;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/metrics', function () {
@@ -41,6 +45,16 @@ Route::get('/metrics', function () {
         ['opcache_jit_buffer_size_bytes', 'gauge', $jit['buffer_size'] ?? 0],
         ['opcache_jit_opt_level', 'gauge', $jit['opt_level'] ?? 0],
     ];
+
+    try {
+        $depth = QueueMetrics::getQueueDepth('redis', 'orders');
+        $oldestAge = $depth->oldestPendingJobAge ? (int) abs(now()->diffInSeconds($depth->oldestPendingJobAge)) : 0;
+        $metrics[] = ['laravel_queue_pending_jobs', 'gauge', $depth->pendingJobs];
+        $metrics[] = ['laravel_queue_reserved_jobs', 'gauge', $depth->reservedJobs];
+        $metrics[] = ['laravel_queue_oldest_job_age_seconds', 'gauge', $oldestAge];
+        $metrics[] = ['laravel_queue_processed_total', 'counter', (int) Redis::get('demo:orders:processed')];
+    } catch (Throwable) {
+    }
 
     $out = '';
     foreach ($metrics as [$name, $type, $value]) {
@@ -94,6 +108,25 @@ Route::get('/customers/cached', function () {
 
 Route::get('/customers/{customer}', function (Customer $customer) {
     return $customer;
+});
+
+Route::get('/orders/dispatch', function () {
+    $count = min((int) request('count', 100), 20000);
+    $workMs = min((int) request('work_ms', 100), 2000);
+    $fail = request()->boolean('fail');
+
+    for ($i = 1; $i <= $count; $i++) {
+        ProcessOrder::dispatch($i, $workMs, $fail)->onQueue('orders');
+    }
+
+    return ['dispatched' => $count, 'queue' => 'orders', 'work_ms' => $workMs, 'fail' => $fail];
+});
+
+Route::get('/orders/queue-status', function () {
+    return [
+        'pending' => Queue::size('orders'),
+        'processed' => (int) Redis::get('demo:orders:processed'),
+    ];
 });
 
 Route::get('/orders', function () {

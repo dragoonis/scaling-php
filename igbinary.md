@@ -70,6 +70,21 @@ slower to serialize, similar to unserialize); the size cut is what you buy. On l
 structures igbinary wins CPU outright, up to 2x on unserialize. JSON was bigger than
 igbinary and slower to decode in every test.
 
+**Stacking compression on top (phpredis `OPT_COMPRESSION`, same session payload):**
+
+| mode | bytes per key | 1k sessions | SET ops/s | GET ops/s |
+|---|---|---|---|---|
+| PHP serializer, no compression | 3,128 B | 3,047 KiB | 18,164 | 16,185 |
+| igbinary | 1,592 B | 1,547 KiB | 17,040 | 16,086 |
+| igbinary + LZ4 | 1,336 B (-57%) | 1,297 KiB | 16,511 | 16,710 |
+| igbinary + ZSTD | **952 B (-70%)** | **922 KiB** | 14,462 (-20%) | 15,490 (-4%) |
+
+LZ4 is nearly free and takes another slice off. ZSTD costs ~20% on writes but
+reads stay within 4% and the payload drops to less than a third of the original.
+For session/cache data that is written once and read often, ZSTD is the win.
+One more option pair in `config/database.php` redis options:
+`Redis::OPT_COMPRESSION => Redis::COMPRESSION_ZSTD`.
+
 ![igbinary overview](docs/images/igbinary-overview.png)
 
 ## The story for the slides
