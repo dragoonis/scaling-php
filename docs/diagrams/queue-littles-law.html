@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Queue Worker Sizing</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem; color: white; }
+    .slide { max-width: 1400px; text-align: center; }
+    .label { color: #22d3ee; font-size: 1.4rem; font-weight: 600; letter-spacing: 0.15em; margin-bottom: 1rem; }
+    .sla { color: #94a3b8; font-size: 1.2rem; margin-bottom: 2.6rem; }
+    .sla b { color: #fbbf24; font-weight: 600; }
+    .formula { font-size: 3rem; font-weight: 700; line-height: 1.35; margin-bottom: 1.2rem; }
+    .formula .frac { color: #34d399; }
+    .formula .op { color: #64748b; }
+    .buffer { color: #94a3b8; font-size: 1.1rem; margin-bottom: 3.4rem; }
+    .examples { display: flex; gap: 1.5rem; justify-content: center; }
+    .example { background: rgba(15, 23, 42, 0.7); border: 1px solid #1e293b; border-radius: 0.75rem; padding: 1.4rem 2rem; font-size: 1.25rem; color: #94a3b8; text-align: left; }
+    .example .tag { font-size: 0.95rem; font-weight: 600; letter-spacing: 0.1em; margin-bottom: 0.7rem; }
+    .example.calm .tag { color: #34d399; }
+    .example.spike .tag { color: #fb7185; }
+    .example b { color: #34d399; font-size: 1.6rem; }
+    .example.spike b { color: #fb7185; }
+    .foot { margin-top: 3rem; color: #475569; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="label">QUEUE WORKER SIZING (LITTLE'S LAW)</div>
+    <div class="sla">declare the SLA: <b>"a job waits at most 60s before pickup"</b> and derive the workers</div>
+    <div class="formula">
+      workers <span class="op">=</span> <span class="frac">pending jobs &divide; SLA seconds</span> <span class="op">&divide;</span> <span class="frac">jobs/s per worker</span>
+    </div>
+    <div class="buffer">(needed throughput to drain the backlog in time, divided by what one worker can do)</div>
+    <div class="examples">
+      <div class="example calm">
+        <div class="tag">STEADY STATE</div>
+        100 pending &middot; 60s SLA &middot; 10 jobs/s each<br>
+        (100 &divide; 60) &divide; 10 &rarr; <b>1 worker</b>
+      </div>
+      <div class="example spike">
+        <div class="tag">SPIKE, 5s OF SLA LEFT</div>
+        500 pending &middot; oldest job 55s old &middot; 8 jobs/s each<br>
+        (500 &divide; 5) &divide; 8 = 13 &times; safety margin &rarr; <b>16 workers</b>
+      </div>
+    </div>
+    <div class="foot">supervisor numprocs=10 is a guess &nbsp;&middot;&nbsp; this recomputes every 5s, capped by host RAM/CPU</div>
+  </div>
+</body>
+</html>

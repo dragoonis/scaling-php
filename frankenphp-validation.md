@@ -1,3 +1,5 @@
+> ⚠️ **Legacy doc:** written for the Symfony version of this demo. The commands and endpoints may not match the Laravel branch yet.
+
 # FrankenPHP Configuration Validation Guide
 
 ## Overview

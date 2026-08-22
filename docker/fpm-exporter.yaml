@@ -1,0 +1,7 @@
+phpfpm:
+  autodiscover: false
+  pools:
+    - socket: "tcp://app:9000"
+      status_socket: "tcp://app:9000"
+      status_path: /fpm-status
+      status_path_enabled: true

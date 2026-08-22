@@ -16,16 +16,19 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure intl \
     && docker-php-ext-install gd zip intl pdo pdo_mysql pdo_sqlite
 
-RUN apt-get install -y git
+RUN apt-get update && apt-get install -y git
+
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+RUN install-php-extensions igbinary redis pcntl
 
 # Install build dependencies for OpenSwoole
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
     build-essential \
     autoconf \
     libtool \
     pkg-config
 
-RUN apt-get install nginx procps nano htop tree -y
+RUN apt-get update && apt-get install nginx procps nano htop tree -y
 
 # Permission Management
 RUN usermod -d /var/www -u 1000 www-data && usermod --shell /bin/bash www-data && groupmod -g 1000 www-data

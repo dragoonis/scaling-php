@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Queue Failure Fuse</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem; color: white; }
+    .slide { max-width: 1400px; text-align: center; }
+    .title { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.7rem; }
+    .subtitle { color: #94a3b8; font-size: 1.15rem; margin-bottom: 3rem; }
+    .big { display: flex; gap: 2rem; justify-content: center; align-items: center; margin-bottom: 3rem; }
+    .huge { background: rgba(15, 23, 42, 0.7); border: 1px solid #1e293b; border-radius: 1rem; padding: 2rem 3rem; }
+    .huge .n { font-size: 4.6rem; font-weight: 700; line-height: 1.1; }
+    .huge.ask .n { color: #fb7185; }
+    .huge.got .n { color: #34d399; }
+    .huge .l { color: #94a3b8; font-size: 1.05rem; margin-top: 0.5rem; }
+    .vs { color: #64748b; font-size: 2rem; font-weight: 700; }
+    .story { display: flex; gap: 1.5rem; justify-content: center; margin-bottom: 2.6rem; }
+    .step { flex: 1; max-width: 420px; background: rgba(15, 23, 42, 0.7); border: 1px solid #1e293b; border-radius: 0.75rem; padding: 1.3rem 1.6rem; text-align: left; font-size: 1rem; color: #94a3b8; line-height: 1.6; }
+    .step .tag { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.1em; margin-bottom: 0.6rem; }
+    .step.trip .tag { color: #fb7185; }
+    .step.hold .tag { color: #fbbf24; }
+    .step.heal .tag { color: #34d399; }
+    .step b { color: white; }
+    .foot { color: #475569; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="title">an outage is not load</div>
+    <div class="subtitle">upstream died, every job fails, retries refill the backlog: the math sees a traffic spike. measured on this repo, 2,000 poisoned jobs</div>
+    <div class="big">
+      <div class="huge ask"><div class="n">999.5</div><div class="l">workers the backlog math demanded</div></div>
+      <div class="vs">&rarr;</div>
+      <div class="huge got"><div class="n">1</div><div class="l">workers the fuse allowed</div></div>
+    </div>
+    <div class="story">
+      <div class="step trip">
+        <div class="tag">TRIP</div>
+        failure rate hit <b>100% over 28 jobs</b> (threshold: 50% over 20 in a 60s window). scaling up would just hammer the dead upstream harder
+      </div>
+      <div class="step hold">
+        <div class="tag">HOLD</div>
+        queue pinned at <b>workers.min = 1</b>. the one worker keeps probing so recovery is noticed the moment the upstream heals
+      </div>
+      <div class="step heal">
+        <div class="tag">HEAL</div>
+        failures age out of the window, fuse closes at <b>0% over 387 jobs</b>, normal scaling resumes: 6 workers, then 9, no restart, no human
+      </div>
+    </div>
+    <div class="foot">cboxdk/laravel-queue-autoscale v4 &middot; try it: make queue-burst COUNT=2000 FAIL=1 &middot; watch it: make queue-debug</div>
+  </div>
+</body>
+</html>

@@ -65,9 +65,9 @@ export const options = {
 // so warm-up never stalls even when we're stress-testing the worker.
 export function setup() {
     const base = TARGETS.fpm;
-    console.log(`Ember wave warming up - fetching product IDs from ${base}/en/products/db`);
+    console.log(`Ember wave warming up - fetching product IDs from ${base}/products`);
 
-    const res = http.get(`${base}/en/products/db`);
+    const res = http.get(`${base}/products`);
     if (res.status !== 200) {
         console.error(`Could not load product IDs (status ${res.status}). Did you run 'make setup'?`);
         return { ids: [] };
@@ -84,7 +84,7 @@ function hit(base, data) {
         return;
     }
     const id = data.ids[(__VU + __ITER) % data.ids.length];
-    const res = http.get(`${base}/en/products/db/${id}`);
+    const res = http.get(`${base}/products/${id}`);
     check(res, { 'status is 200': (r) => r.status === 200 });
     sleep(0.02); // tiny pause; each VU still hammers ~40+ req/s
 }

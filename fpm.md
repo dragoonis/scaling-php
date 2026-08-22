@@ -2,13 +2,22 @@
 
 ## Boot Normal PHP with FPM
 
-Start the PHP-FPM service using Docker Compose:
+First time (boots the container, installs composer dependencies, then fills the database):
 
 ```bash
 make up
+make setup
 ```
 
-This boots the FPM container with the configuration defined in `docker-compose.yml -> app: service`.
+This boots the FPM container with the configuration defined in `docker-compose.yml -> app: service`,
+then runs the Laravel migrations and seeds the demo data (10k products, 2k customers, 5k orders).
+
+Later runs: just `make up` - the database and vendor/ survive between sessions, and `make setup`
+is safe to re-run anytime (it skips data that already exists). After pulling code changes, run
+`docker compose restart app` - the production opcache settings cache compiled PHP, so edited
+files are not picked up until the container restarts.
+
+Check it works: http://localhost:8088/products
 
 ## FPM Settings & Configuration
 
@@ -18,13 +27,15 @@ PHP-FPM uses a process manager to handle incoming requests efficiently. The conf
 
 ### Key Configuration Settings
 
+This demo ships with (see `docker/fpm.conf`):
+
 ```ini
 pm = dynamic                    # Process manager type (static, dynamic, ondemand)
-pm.max_children = 50            # Maximum number of child processes
+pm.max_children = 300           # Maximum number of child processes
 pm.start_servers = 5            # Number of children created on startup
 pm.min_spare_servers = 5        # Minimum idle processes
-pm.max_spare_servers = 35       # Maximum idle processes
-pm.max_requests = 500           # Requests before process restart (helps with memory leaks)
+pm.max_spare_servers = 50       # Maximum idle processes
+pm.max_requests = 1000          # Requests before process restart (helps with memory leaks)
 pm.status_path = /fpm-status    # FPM status endpoint
 ```
 
@@ -37,7 +48,14 @@ pm.status_path = /fpm-status    # FPM status endpoint
 
 > Note: if you configure pm.min_spare_servers = 5 more than pm.start_servers = 5 it will fail
 
-When you run `htop` or `ps aux | grep php-fpm`, you'll see:
+Watch it live from this repo with:
+
+```bash
+make fpm-htop   # htop inside the app container, filtered to php-fpm
+make fpm-ps     # one-shot process list, no TUI
+```
+
+You'll see:
 
 ![img.png](docs/images/fpm-process.png)
 
@@ -82,6 +100,10 @@ Average PHP process: 50 MB
 pm.max_children = (4096 - 1024) / 50 = 61 processes
 ```
 
+![PHP-FPM pool sizing math](docs/images/fpm-sizing-math.png)
+
+Interactive version: [docs/diagrams/fpm-sizing-math.html](docs/diagrams/fpm-sizing-math.html).
+
 ### Production Calculation (16GB Server)
 
 **Server Specs:** 16GB RAM, 12GB reserved for applications
@@ -119,6 +141,30 @@ Use the interactive calculator at https://spot13.com/pmcalculator/ to determine 
 ![FPM Calculator](docs/fpm-calculator.png)
 
 Input your server specifications to get recommended FPM settings.
+
+## Live opcache retune - change php.ini in production without restarting FPM
+
+PHP-FPM's **SIGUSR2** does a graceful reload: the master stays up, the listen socket is
+kept, workers are recycled, and php.ini (including every opcache setting) is re-read.
+The php.ini is bind-mounted, so edits on the host apply on reload:
+
+```bash
+# terminal 1 - keep load running so the audience sees it stay alive
+EMBER_TARGETS=fpm make ember-load
+
+# terminal 2 - halve the opcache memory live (edits the ini + SIGUSR2 + prints the result)
+make opcache-shrink
+```
+
+Watch the Grafana OPcache row: the Memory Usage Breakdown ceiling drops from 192MiB to
+96MiB, cached scripts reset and refill within seconds, hit ratio dips and recovers.
+Measured during a 660 req/s run: 8 failed requests out of 16,898 (0.04%) at the reload
+instant, then clean. Put the value back live with `make opcache-restore`, and check the
+current state anytime with `make opcache-status`.
+
+> ⚠️ It is SIGUSR2, not SIGHUP. SIGHUP is nginx's reload signal - php-fpm does not
+> handle it and **dies** (we tested: the container went down). USR1 reopens logs,
+> USR2 reloads, QUIT is graceful stop.
 
 ## K6 Load Testing
 
@@ -169,6 +215,10 @@ The FPM exporter converts FPM status data to Prometheus metrics format.
 
 ### Start FPM Exporter
 
+How the whole pipeline fits together (interactive version: [docs/diagrams/fpm-metrics-pipeline.html](diagrams/fpm-metrics-pipeline.html)):
+
+![PHP-FPM metrics pipeline](docs/images/fpm-metrics-pipeline.png)
+
 ```bash
 make up-exporter
 make ps | grep exporter
@@ -186,6 +236,35 @@ Go to **URL:** http://localhost:9253/metrics
 - `phpfpm_max_children_reached` - Times max_children limit hit
 - `phpfpm_slow_requests` - Number of slow requests
 - `phpfpm_accepted_connections` - Total accepted connections
+
+### The production-grade alternative: cboxdk/fpm-exporter
+
+We also run [cboxdk/fpm-exporter](https://cbox.dk/packages/fpm-exporter) side by
+side (service `cbox-fpm-exporter`, port **9114**, config in
+`docker/fpm-exporter.yaml`). Same idea as the hipages exporter, but it adds
+per-process detail the status page alone does not give you:
+
+- `phpfpm_process_last_request_cpu{pid=...}` and
+  `phpfpm_process_last_request_memory{pid=...}` per worker
+- `phpfpm_listen_queue_length` (our 4096 backlog, straight from FPM)
+- per-pool opcache metrics when it can inject its probe script (needs a shared
+  filesystem with FPM, so in this two-container setup that part stays off and
+  our own `/metrics` route covers opcache instead)
+
+```bash
+curl -s http://localhost:9114/metrics | grep phpfpm_
+```
+
+Prometheus scrapes it as job `cbox-fpm-exporter`. Written by Sylvester Damgaard
+(ex-Laravel); it can also autodiscover every pool on a box via `php-fpm -tt`.
+
+It has its own Grafana dashboard, based on the one shipped in their repo and
+extended with the per-worker request cost panels:
+**http://localhost:3000/d/cbox-fpm-exporter** (provisioned from
+`grafana/provisioning/dashboards/cbox-fpm-exporter-dashboard.json`). Panels:
+active vs idle workers, listen queue vs the kernel backlog limit,
+max_children_reached hits, accepted connections/s, and peak memory + CPU per
+request across workers.
 
 ## Prometheus Integration
 
@@ -257,6 +336,8 @@ ps -ylC php-fpm --sort:rss
 ```bash
 watch -n 1 'ps aux | grep php-fpm'
 ```
+
+Or from the host, without entering the container: `make fpm-htop`.
 
 **Count active vs idle processes:**
 ```bash

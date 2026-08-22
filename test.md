@@ -1,5 +1,10 @@
 ### opcache introduction
 
+How the OPcache stats leave each runtime and reach the dashboard (interactive version:
+[docs/diagrams/opcache-metrics-pipeline.html](docs/diagrams/opcache-metrics-pipeline.html)):
+
+![OPcache exporter pipeline](docs/images/opcache-metrics-pipeline.png)
+
 ```
 make up-opcache-dashboard
 ```

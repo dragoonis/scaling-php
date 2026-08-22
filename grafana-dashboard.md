@@ -1,3 +1,5 @@
+> ⚠️ **Legacy doc:** written for the Symfony version of this demo. The commands and endpoints may not match the Laravel branch yet.
+
 # Web Server Monitoring Dashboards Guide
 
 A comprehensive guide to understanding and using two Grafana dashboards for full-stack web server monitoring: **FrankenPHP + Caddy** optimized for Symfony applications and **PHP-FPM Performance** monitoring.

@@ -52,6 +52,9 @@ docker-frankenphp:
 build:
 	docker compose build
 
+rebuild: ## 🔨 Rebuild and restart all three runtimes (run this after switching branches)
+	docker compose up -d --build app franken franken-worker
+
 restart:
 	docker compose stop app
 	docker compose up -d app
@@ -82,7 +85,7 @@ down-franken:
 	docker compose stop franken
 
 up-worker:
-	docker compose up franken-worker -d
+	docker compose up franken-worker -d --build
 
 down-worker:
 	docker compose stop franken-worker
@@ -114,24 +117,84 @@ down-exporter:
 app-shell:
 	docker compose exec -it app bash
 
+fpm-htop: ## 🔍 Live htop inside the app container, filtered to the PHP-FPM processes
+	docker compose exec -it app htop -F php-fpm
+
+fpm-ps: ## 🔍 One-shot list of the PHP-FPM processes inside the app container
+	docker compose exec app bash -c "ps aux | grep [p]hp-fpm"
+
+fpm-reload: ## ♻️  Graceful FPM reload (SIGUSR2): re-reads php.ini incl opcache, zero dropped requests
+	docker compose exec app pkill -USR2 -o php-fpm
+
+opcache-status: ## ♻️  Show current opcache memory limit, usage and cached scripts
+	@docker compose exec -T app php -r 'echo "memory_consumption: ", ini_get("opcache.memory_consumption"), "M\n";'
+	@curl -s http://localhost:8088/metrics | grep -E "^opcache_(memory_used_bytes|memory_free_bytes|num_cached_scripts) "
+
+opcache-shrink: ## ♻️  LIVE demo: halve opcache memory (192->96) via SIGUSR2, no restart
+	perl -pi -e 's/opcache.memory_consumption=192/opcache.memory_consumption=96/' docker/symfony.prod.ini
+	$(MAKE) fpm-reload
+	@sleep 3
+	$(MAKE) opcache-status
+
+opcache-restore: ## ♻️  Put opcache memory back to 192 the same live way
+	perl -pi -e 's/opcache.memory_consumption=96/opcache.memory_consumption=192/' docker/symfony.prod.ini
+	$(MAKE) fpm-reload
+	@sleep 3
+	$(MAKE) opcache-status
+
+fpm-recycle-demo: ## 🔁 Swap in pm.max_requests=50 so worker recycling is visible in fpm-htop
+	FPM_CONF=fpm.demo.conf docker compose up -d app
+
+fpm-recycle-restore: ## 🔁 Back to the normal pool config (pm.max_requests=1000)
+	docker compose up -d app
+
+octane-reload: ## 🔁 Gracefully recycle all Octane workers (run it mid-load, zero dropped requests)
+	docker compose exec franken-worker php artisan octane:reload
+
+queue-autoscale: ## 🤖 Run the SLA-driven queue autoscale manager (Ctrl+C to stop)
+	docker compose exec app php artisan queue:autoscale
+
+queue-burst: ## 📨 Dispatch a burst of jobs (COUNT=3000, WORK_MS=100, FAIL=1 to simulate an outage) to the orders queue
+	curl -s "http://localhost:8088/orders/dispatch?count=$(or $(COUNT),3000)&work_ms=$(or $(WORK_MS),100)&fail=$(or $(FAIL),0)"
+	@echo
+
+queue-watch: ## 👀 Watch worker count + backlog while the autoscaler reacts (Ctrl+C to stop)
+	@while true; do \
+		W=$$(docker compose exec app sh -c "ps ax | grep 'artisan queue:work' | grep -v grep | wc -l" | tr -d ' \r'); \
+		S=$$(curl -s "http://localhost:8088/orders/queue-status"); \
+		echo "workers=$$W $$S"; \
+		sleep 2; \
+	done
+
+queue-debug: ## 🔎 Raw queue state as the autoscaler sees it
+	docker compose exec app php artisan queue:autoscale:debug --queue=orders
+
+queue-reset: ## 🧹 Wipe the orders queue clean: pending/failed jobs, counters, fuse state
+	docker compose exec redis redis-cli del laravel-database-queues:orders laravel-database-queues:orders:reserved laravel-database-queues:orders:delayed laravel-database-queues:orders:notify
+	docker compose exec app php artisan tinker --execute="DB::table('failed_jobs')->delete(); echo 'failed_jobs cleared';"
+	docker compose exec redis redis-cli set laravel-database-demo:orders:processed 0
+	docker compose exec app php artisan cache:clear
+	@echo "queue is clean: 0 pending, 0 failed, counter 0, fuse forgotten"
+
 franken-shell:
 	docker compose exec -it franken bash
 
 worker-shell:
 	docker compose exec -it franken-worker bash
 
-migrate: ## Create/update the DB schema from entity metadata (DB-agnostic; the committed migrations are SQLite-only)
-	docker compose exec app php bin/console doctrine:schema:update --force --complete
+igbinary-bench:
+	docker compose exec app php artisan app:igbinary-bench
+
+migrate: ## Run the Laravel migrations
+	docker compose exec app php artisan migrate --force
 
 seed: ## Seed the database with test data
-	@echo "Seeding database with test data..."
-	@echo "Seeder file: src/Command/SeedDatabaseCommand.php"
-	docker compose exec app php bin/console app:seed-database
+	docker compose exec app php artisan db:seed --force
 
 setup: migrate seed ## Run migrations and seed database
 
-test: ## Run the unit test suite (APP_ENV=test)
-	docker compose exec -e APP_ENV=test app php bin/phpunit
+test: ## Run the Laravel test suite
+	docker compose exec app php artisan test
 
 clean:
 	docker compose down -v --remove-orphans
@@ -139,21 +202,26 @@ clean:
 # ──────────────────────────────────────────────────────────────
 # 🔥 Ember - live FrankenPHP dashboard (see ember.md)
 #   Ember is the tool from https://github.com/alexandre-daubois/ember
-#   Install once:  brew install alexandre-daubois/tap/ember
+#   Install once:  make ember-install
 # ──────────────────────────────────────────────────────────────
 # Defaults target the FrankenPHP WORKER (:8081 / admin :2020) - it pre-warms at boot
 # (prod mode) so it handles load without the cold-start wedge classic hits. `make ember`
 # + `make ember-load` work as a matched pair out of the box. Watch classic instead with
 # EMBER_ADDR=http://localhost:2019 / EMBER_TARGETS=franken.
 EMBER_ADDR ?= http://localhost:2020
+EMBER_SERVICE ?= franken-worker
 EMBER_TARGETS ?= worker
 .PHONY: ember ember-install ember-load compare compare-load open urls
 
 ember-install: ## 🔥 Install the Ember CLI (auto-detects macOS / Linux / Windows)
 	@bash bin/install-ember.sh
 
-ember: ## 🔥 Open the Ember dashboard (worker by default; EMBER_ADDR=http://localhost:2019 for classic)
-	ember --addr $(EMBER_ADDR)
+# --stdin-logs is load-bearing: without it Ember hot-registers a net_writer log in
+# Caddy's config that dials back to the host, which the container can't reach, and
+# the config reload wedges FrankenPHP (0 threads, every request hangs). Needs Ember
+# >= 1.5 - 'make ember-install' upgrades older ones.
+ember: ## 🔥 Open the Ember dashboard (worker by default; EMBER_ADDR=http://localhost:2019 EMBER_SERVICE=franken for classic)
+	docker compose logs -f --no-log-prefix --tail 0 $(EMBER_SERVICE) | ember --addr $(EMBER_ADDR) --stdin-logs
 
 ember-load: ## 🔥 Run the up→down→up traffic wave (worker by default; EMBER_TARGETS=franken for classic)
 	k6 run -e EMBER_TARGETS=$(EMBER_TARGETS) k6/ember_ramp.js
@@ -166,7 +234,7 @@ compare-load: ## 🔥 Drive ALL THREE runtimes at once (use this with 'make comp
 
 # Open the app in the default browser - works on macOS, Linux, WSL and Windows.
 #   make open                                        opens the default URL below
-#   make open http://localhost:8081/en/products/db   opens any URL (URL=... still works)
+#   make open http://localhost:8081/products   opens any URL (URL=... still works)
 URL ?= http://localhost:8088
 ifeq (open,$(firstword $(MAKECMDGOALS)))
 ifneq ($(word 2,$(MAKECMDGOALS)),)
@@ -179,11 +247,14 @@ endif
 open: ## 🌐 Open the app in your default browser (macOS / Linux / WSL / Windows)
 	@bash bin/open-url.sh "$(URL)"
 
+preflight: ## 🛫 Check everything is demo-ready (runtimes, data, metrics, tools)
+	@bash bin/preflight.sh
+
 urls: ## 🌐 Print all demo URLs (Ctrl/Cmd+click to open)
 	@echo "FPM app            http://localhost:8088"
 	@echo "FrankenPHP classic http://localhost:8080"
 	@echo "FrankenPHP worker  http://localhost:8081"
-	@echo "Products (FPM)     http://localhost:8088/en/products/db"
+	@echo "Products (FPM)     http://localhost:8088/products"
 	@echo "Grafana            http://localhost:3000  (symfony/symfony)"
 	@echo "Prometheus         http://localhost:9090"
 	@echo "OPcache dashboard  http://localhost:42042"

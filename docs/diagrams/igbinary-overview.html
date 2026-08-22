@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>igbinary Overview</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; padding: 2rem; color: white; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #a78bfa; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+    .diagram-container { background: rgba(15, 23, 42, 0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.5rem; overflow-x: auto; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>igbinary - where it plugs in</h1>
+      </div>
+      <p class="subtitle">A PHP extension replacing the serializer underneath - you flip a switch, your code does not change</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1000 560">
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <line x1="500" y1="140" x2="500" y2="188" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <rect x="330" y="60" width="340" height="80" rx="8" fill="#0f172a"/>
+        <rect x="330" y="60" width="340" height="80" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="500" y="92" fill="white" font-size="13" font-weight="600" text-anchor="middle">ext-igbinary</text>
+        <text x="500" y="112" fill="#94a3b8" font-size="9" text-anchor="middle">compact binary format instead of serialize()'s text format</text>
+        <text x="500" y="127" fill="#a78bfa" font-size="9" text-anchor="middle">same semantics: __sleep, __wakeup, objects, references</text>
+
+        <rect x="40" y="190" width="290" height="120" rx="8" fill="#0f172a"/>
+        <rect x="40" y="190" width="290" height="120" rx="8" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="185" y="216" fill="white" font-size="11" font-weight="600" text-anchor="middle">phpredis</text>
+        <rect x="60" y="228" width="250" height="30" rx="4" fill="#020617"/>
+        <text x="185" y="247" fill="#fb7185" font-size="8" text-anchor="middle">Redis::OPT_SERIALIZER = SERIALIZER_IGBINARY</text>
+        <text x="185" y="276" fill="#94a3b8" font-size="8" text-anchor="middle">cache, queues, shared state</text>
+        <text x="185" y="292" fill="#94a3b8" font-size="8" text-anchor="middle">stacks with OPT_COMPRESSION (LZ4/ZSTD)</text>
+
+        <rect x="355" y="190" width="290" height="120" rx="8" fill="#0f172a"/>
+        <rect x="355" y="190" width="290" height="120" rx="8" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="500" y="216" fill="white" font-size="11" font-weight="600" text-anchor="middle">Laravel</text>
+        <rect x="375" y="228" width="250" height="42" rx="4" fill="#020617"/>
+        <text x="500" y="245" fill="#34d399" font-size="8" text-anchor="middle">config/database.php -> redis.options:</text>
+        <text x="500" y="260" fill="#34d399" font-size="8" text-anchor="middle">'serializer' =&gt; Redis::SERIALIZER_IGBINARY</text>
+        <text x="500" y="290" fill="#94a3b8" font-size="8" text-anchor="middle">one line, applies to phpredis connections</text>
+
+        <rect x="670" y="190" width="290" height="120" rx="8" fill="#0f172a"/>
+        <rect x="670" y="190" width="290" height="120" rx="8" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="815" y="216" fill="white" font-size="11" font-weight="600" text-anchor="middle">php.ini</text>
+        <rect x="690" y="228" width="250" height="42" rx="4" fill="#020617"/>
+        <text x="815" y="245" fill="#22d3ee" font-size="8" text-anchor="middle">session.serialize_handler = igbinary</text>
+        <text x="815" y="260" fill="#22d3ee" font-size="8" text-anchor="middle">apc.serializer = igbinary</text>
+        <text x="815" y="290" fill="#94a3b8" font-size="8" text-anchor="middle">native PHP sessions + APCu</text>
+
+        <rect x="40" y="350" width="450" height="170" rx="8" fill="#0f172a"/>
+        <rect x="40" y="350" width="450" height="170" rx="8" fill="rgba(6, 78, 59, 0.25)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="60" y="378" fill="#34d399" font-size="11" font-weight="600">why (our measurements)</text>
+        <text x="60" y="402" fill="#94a3b8" font-size="9">- session in Redis: 49% less memory per key</text>
+        <text x="60" y="420" fill="#94a3b8" font-size="9">- payloads 47-68% smaller across all tests</text>
+        <text x="60" y="438" fill="#94a3b8" font-size="9">- unserialize up to 2x faster on larger data</text>
+        <text x="60" y="456" fill="#94a3b8" font-size="9">- redis round-trip +5-6% ops on top</text>
+        <text x="60" y="482" fill="#34d399" font-size="9">the pattern that matters: serialize rarely,</text>
+        <text x="60" y="498" fill="#34d399" font-size="9">unserialize often - reads win every time</text>
+
+        <rect x="510" y="350" width="450" height="170" rx="8" fill="#0f172a"/>
+        <rect x="510" y="350" width="450" height="170" rx="8" fill="rgba(136, 19, 55, 0.25)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="530" y="378" fill="#fb7185" font-size="11" font-weight="600">tradeoffs</text>
+        <text x="530" y="402" fill="#94a3b8" font-size="9">- binary: not readable in redis-cli, PHP-only format</text>
+        <text x="530" y="420" fill="#94a3b8" font-size="9">- every reader needs the extension (all servers, workers)</text>
+        <text x="530" y="438" fill="#94a3b8" font-size="9">- switching serializers = old entries unreadable, flush first</text>
+        <text x="530" y="456" fill="#94a3b8" font-size="9">- tiny payloads: serialize slightly slower, size still wins</text>
+        <text x="530" y="482" fill="#fb7185" font-size="9">use json where other languages read the data,</text>
+        <text x="530" y="498" fill="#fb7185" font-size="9">igbinary where only PHP does</text>
+      </svg>
+    </div>
+
+    <p class="footer">scaling-php demo - igbinary overview</p>
+  </div>
+</body>
+</html>

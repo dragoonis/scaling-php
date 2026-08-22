@@ -1,227 +1,108 @@
-# Scaling PHP Systems - FrankenPHP @ IPC Conference Germany
+# Scaling PHP - one Laravel app, three runtimes
 
-A Symfony CQRS demo for exploring how modern PHP runtimes scale. The same app runs three ways - **PHP-FPM**,
-**FrankenPHP classic**, and **FrankenPHP worker** - so you can load-test them side by side with k6 and watch
-the difference live. Everything runs in Docker Compose and is driven by the Makefile.
+The same Laravel 12 app served three ways, so you can load test them side by side and watch
+what actually happens:
 
-## What this demo shows
+| Runtime | Port | What it is |
+|---|---|---|
+| PHP-FPM | 8088 | nginx + process pool, the classic setup |
+| FrankenPHP classic | 8080 | modern threaded server, still boots the app per request |
+| Octane worker | 8081 | FrankenPHP + Laravel Octane, app booted once and kept warm |
 
-- One Symfony app (Products / Customers / Orders) using **CQRS**: writes go to the database, reads come from
-  fast **Redis projections**.
-- The same app served by **three runtimes**, so you can compare them fairly:
+Everything runs in Docker Compose and is driven by the Makefile. Metrics flow into
+Prometheus and Grafana out of the box.
 
-  | Runtime            | Port | What it is                                    |
-  |--------------------|------|-----------------------------------------------|
-  | PHP-FPM            | 8088 | Traditional process-per-request               |
-  | FrankenPHP classic | 8080 | Modern PHP server on Caddy                     |
-  | FrankenPHP worker  | 8081 | Long-lived workers, app kept warm in memory   |
+## Requirements
 
-- Live metrics for all of them (FPM status, OPcache, Caddy/Prometheus) plus Grafana dashboards.
-- **🔥 [Ember](ember.md)** - a one-command live demo that ramps traffic up and down while you watch the
-  numbers move.
+Docker, make, and [k6](https://k6.io) (`brew install k6`). Check with `bash test-system.sh`.
 
-> Runtimes run **PHP 8.4** (FrankenPHP `1.12.4`). New here? **Start with [ember.md](ember.md).**
-
-## Web Interfaces & Dashboards
-
-| Service               | URL                           | Description                           |
-|-----------------------|-------------------------------|---------------------------------------|
-| FPM App               | http://localhost:8088         | Main Symfony app (FPM)                |
-| Franken               | http://localhost:8080         | FrankenPHP (HTTP, regular mode)       |
-| Franken Worker        | http://localhost:8081         | FrankenPHP Worker (HTTP, optimized)   |
-| Grafana               | http://localhost:3000         | Metrics dashboard (symfony/symfony)   |
-| Prometheus            | http://localhost:9090         | Prometheus metrics                    |
-| Opcache Dashboard     | http://localhost:42042        | PHP Opcache dashboard                 |
-| Opcache Metrics (FPM) | http://localhost:8088/metrics | PHP Opcache metrics via FPM app       |
-| Franken Metrics       | http://localhost:8080/metrics | Caddy/FrankenPHP metrics (non-worker) |
-| Worker Metrics        | http://localhost:8081/metrics | Caddy/FrankenPHP metrics (worker)     |
-
-> The same metrics are also served by the Caddy admin API on ports 2019 (non-worker) and
-> 2020 (worker) — used by Prometheus and fine with `curl` — but Caddy v2.11 rejects browser
-> navigations to the admin API as CSRF protection (browsers send `Sec-Fetch-*` headers that
-> trigger its origin check, producing `client is not allowed to access from origin ''`).
-
-## Setup
-
-### Required Dependencies
-
-1. **Docker & Docker Compose**
-   - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose)
-   - Or install separately: [Docker](https://docs.docker.com/get-docker/)
-     and [Docker Compose](https://docs.docker.com/compose/install/)
-
-2. **Make**
-   - **macOS**: Usually pre-installed, or install via Homebrew: `brew install make`
-   - **Linux**: Install via package manager:
-      - Ubuntu/Debian: `sudo apt-get install make`
-      - CentOS/RHEL: `sudo yum install make`
-      - Fedora: `sudo dnf install make`
-
-3. **K6 (Load Testing Tool)**
-   - **macOS**: `brew install k6`
-   - **Linux**:
-      - Ubuntu/Debian: `sudo gpg -k`
-     ```bash
-      curl -fsSL https://dl.k6.io/key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg
-
-      echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-
-      sudo apt-get update
-      sudo apt-get install -y k6
-     ```
-      - CentOS/RHEL/Fedora: `sudo yum install k6` or `sudo dnf install k6`
-
-### Verify Installation
-
-Run the test script to verify all dependencies are installed:
+## Quickstart
 
 ```bash
-./test-system.sh
+make up          # PHP-FPM app on :8088 (builds image, composer install)
+make setup       # migrations + demo data (10k products, 2k customers, 5k orders)
+make up-franken  # FrankenPHP classic on :8080
+make up-worker   # Octane worker on :8081
 ```
 
-This will check for Docker, Docker Compose, Make, and K6 and report their status.
+Check it works: http://localhost:8088/products (same path on 8080 and 8081).
 
-### Docker Images Setup
+Prove which mode is serving: `curl localhost:8081/runtime` - watch
+`requests_served_by_this_worker` climb across calls. On 8088 and 8080 it is always 1,
+because those runtimes throw the app away after every request. That one number is the
+whole worker-mode story.
 
-Before starting the application, you need to pull the required Docker images.
+## The demos
+
+**🔥 The live dashboard** - start with **[ember.md](ember.md)**, a follow-along guide:
+`make ember` in one terminal, `make ember-load` in another, watch a FrankenPHP server
+handle a wave of traffic in real time.
+
+**📊 All three at once** - `make compare` + `make compare-load`: one glowing bar per
+runtime, same wave, watch the worker pull ahead.
+
+**🔍 Watch FPM breathe** - `make fpm-htop` during load: children spawn as traffic climbs
+and die back after. See [fpm.md](fpm.md) for the pool sizing math.
+
+**🔁 Disposable workers** - [disposable-workers.md](disposable-workers.md): FPM
+`pm.max_requests` and Octane `--max-requests` are the same idea. Includes the
+zero-downtime `make octane-reload` mid-load stunt.
+
+**📈 Benchmarks** - `make benchmark-product-random-fpm` (and `-franken`,
+`-franken-worker`): wrk-style numbers against real data.
+
+## Dashboards
 
 ```bash
-make pull-docker
+make up-grafana   # prometheus :9090 + grafana :3000
+make up-exporter  # php-fpm metrics exporter
 ```
 
-This ensures all required Docker images are available locally before starting the services.
+- Grafana: http://localhost:3000 (view without login; admin is symfony/symfony)
+- Prometheus: http://localhost:9090
+- Raw metrics: :8080/metrics and :8081/metrics (FrankenPHP), :8088/fpm-status (FPM)
 
-## Quick Start
+`make urls` prints every URL.
 
-1. **Build and start all services:**
+## Tuning
 
-```bash
-make up
-```
+- Octane worker knobs and the sizing math: **[franken-worker.md](franken-worker.md)** -
+  workers default to 16, override per machine with
+  `OCTANE_WORKERS=28 docker compose up -d franken-worker`
+- FrankenPHP classic: **[frankenphp.md](frankenphp.md)**
+- PHP-FPM pool sizing: **[fpm.md](fpm.md)**
+- Serializer choice for Redis and sessions: **[igbinary.md](igbinary.md)**
+- SLA-driven queue worker autoscaling: **[queues.md](queues.md)** - try
+  `make queue-autoscale`, `make queue-watch`, `make queue-burst`
 
-2. **Set up the database and seed data:**
+## Five numbers to check monday morning
 
-```bash
-make setup
-```
+The closing-slide checklist ([docs/images/monday-checklist.png](docs/images/monday-checklist.png)),
+each number is one command in this repo:
 
-Then open the app in your browser:
+| # | number | healthy | check it here |
+|---|---|---|---|
+| 1 | max children reached | 0 | `curl localhost:8088/fpm-status` (or exporter :9114) |
+| 2 | listen queue | 0 | `curl localhost:8088/fpm-status`, the queue PHP never sees |
+| 3 | opcache hit rate + wasted % | >99%, <5% | `make opcache-status` or `curl :8088/metrics` |
+| 4 | memory per worker (RSS) | stable | `make fpm-ps`, the unit behind max_children |
+| 5 | oldest job age | inside your SLA | `make queue-debug`, age matters, depth lies |
 
-```bash
-make open          # opens http://localhost:8088 (works on macOS, Linux, WSL, Windows)
-make open http://localhost:8081/en/products/db   # or open any URL directly
-make urls          # or print every dashboard URL to Ctrl+click
-```
+Details: 1-2 and 4 in [fpm.md](fpm.md), 3 in [fpm.md](fpm.md) + [grafana-dashboard.md](grafana-dashboard.md), 5 in [queues.md](queues.md).
 
-## 🔥 Ember - live demo (start here)
+## Gotchas that will bite you
 
-The quickest way to see what this project is about. We use **[Ember](https://github.com/alexandre-daubois/ember)**,
-a terminal dashboard for FrankenPHP, and watch it react to a wave of traffic.
+- **Switched branches?** `make rebuild` - the php.ini is baked into the images
+- **Edited PHP code?** `docker compose restart app franken franken-worker` - prod opcache
+  settings cache compiled code until restart
+- **Load test everything.** Three real bugs in this repo (file sessions, cached Eloquent
+  models, a 3x metrics double count) were invisible in a browser and only showed up
+  under k6
 
-```bash
-# one-time setup: install Ember, start the stack, create + seed the database
-make ember-install
-make up && make up-worker && make setup
-```
+## Slide assets
 
-> `make setup` (re)seeds the database (10k products + projections) - it's a **one-time** step.
-> On later runs just start the services: `make up && make up-franken`.
-
-```bash
-# terminal 1 - the live dashboard
-make ember
-```
-
-```bash
-# terminal 2 - send a spiky wave of traffic
-make ember-load
-```
-
-Watch RPS and busy threads climb and fall as FrankenPHP handles the wave - no flags needed, both commands
-default to the stable classic server.
-
-Want the **side-by-side** FPM vs classic vs worker race? Use `make compare` + `make compare-load`.
-
-Full beginner walkthrough (with screenshots) in **[ember.md](ember.md)**.
-
-## PHP-FPM & OPcache Configuration
-
-For detailed end-to-end guides on PHP-FPM and OPcache configuration, monitoring, and optimization:
-
-**See [`fpm.md`](fpm.md) for complete PHP-FPM documentation including:**
-- Booting and running PHP-FPM
-- FPM settings and configuration
-- FPM math and right-sizing calculations
-- FPM calculator tool
-- K6 load testing
-- FPM status page and monitoring
-- FPM exporter metrics
-- Grafana dashboard integration
-
-**See [`php.ini.md`](php.ini.md) for complete OPcache documentation including:**
-- Booting and accessing the OPcache dashboard
-- PHP OPcache .ini settings and configuration
-- Metrics endpoint and export
-- Prometheus integration for OPcache
-- Grafana dashboard for OPcache monitoring
-
-### Composer Autoload Optimization
-
-For optimal performance, this project uses Composer autoload optimizations configured in `composer.json`:
-
-```json
-{
-  "config": {
-    "optimize-autoloader": true,
-    "classmap-authoritative": true
-  }
-}
-```
-
-**Performance Impact:**
-
-- `optimize-autoloader`: ~10-15% faster autoloading (converts PSR-0/PSR-4 to classmap)
-- `apcu-autoloader`: ~50-70% faster (requires APCu extension)
-- `classmap-authoritative`: Set to `false` for development, `true` for production only
-
-**Reference:** See the
-official [Symfony Performance Documentation](https://symfony.com/doc/current/performance.html#optimize-composer-autoloader)
-for detailed autoloader optimization guidelines and best practices.
-
-
-## FrankenPHP Configuration
-
-This project uses FrankenPHP (a modern PHP runtime built on Caddy) with two different configurations for performance
-comparison and monitoring.
-
-**See [`frankenphp.md`](frankenphp.md) for complete FrankenPHP documentation including:**
-
-- Service configuration and differences
-- Auto-reload (file watching) setup
-- Caddy configuration and environment variables
-- Performance testing and monitoring
-- Troubleshooting guide
-- Resource optimization guidelines
-
-## Grafana Dashboard
-
-A detailed PHP-FPM and OPcache monitoring dashboard is available in Grafana. It includes:
-
-- PHP-FPM health, queue, and process metrics
-- Request rate, duration, and memory usage
-- OPcache hit ratio, memory, and script cache stats
-- JIT and interned strings monitoring
-- Alerts and color-coded panels for quick health checks
-
-**See [`grafana-dashboard.md`](grafana-dashboard.md) for a full description of all panels and dashboard features.**
-
-## PHP Configuration Reference
-
-For detailed PHP configuration documentation and settings explanation, see [`php.ini.md`](php.ini.md).
-
-This covers all settings in `./docker/symfony.prod.ini` including:
-- OPcache configuration
-- Memory management
-- Security settings
-- Session management
-- Performance optimization
+Dark-themed slide graphics in `docs/images/` (runtime benchmark, disposable workers,
+metrics pipelines, FrankenPHP tuning, FPM sizing math, igbinary, queue sizing and
+the failure fuse, the monday checklist), HTML sources in `docs/diagrams/`, and
+ChatGPT prompts to regenerate or restyle any of them in
+[docs/diagrams/PROMPTS.md](docs/diagrams/PROMPTS.md).
