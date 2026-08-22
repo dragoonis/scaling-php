@@ -63,7 +63,7 @@ shell:
 	docker compose exec app bash
 
 up:
-	docker compose up -d --build app
+	docker compose up -d app
 	docker compose exec app composer install
 	docker compose up -d redis
 
@@ -79,7 +79,7 @@ up-redis:
 
 
 up-franken:
-	docker compose up franken -d --build
+	docker compose up franken -d
 
 down-franken:
 	docker compose stop franken
@@ -181,6 +181,9 @@ franken-shell:
 
 worker-shell:
 	docker compose exec -it franken-worker bash
+
+igbinary-bench:
+	docker compose exec app php artisan app:igbinary-bench
 
 migrate: ## Run the Laravel migrations
 	docker compose exec app php artisan migrate --force

@@ -75,8 +75,8 @@ class IgbinaryBench extends Command
             '_token' => $faker(40),
             'user' => [
                 'id' => 105069,
-                'name' => 'Kevin Abrar Khansa',
-                'email' => 'kevariable@gmail.com',
+                'name' => 'Cool PHP Developer',
+                'email' => 'coolphpdeveloper@gmail.com',
                 'roles' => ['admin', 'speaker', 'developer'],
                 'preferences' => ['theme' => 'dark', 'locale' => 'en', 'tz' => 'Europe/Copenhagen', 'notifications' => true],
                 'last_login' => '2026-08-19T14:00:00Z',
@@ -166,7 +166,7 @@ class IgbinaryBench extends Command
             $r = new Redis;
             $r->connect(env('REDIS_HOST', 'redis'), (int) env('REDIS_PORT', 6379));
             $r->select(9);
-            $r->flushDB();
+            $r->flushDB(); // WARNING - DONT RUN THIS ON PRODUCTION
             $r->setOption(Redis::OPT_SERIALIZER, $serializer);
             $r->setOption(Redis::OPT_COMPRESSION, $compression);
 
