@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monday Morning Checklist</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem; color: white; }
+    .slide { max-width: 1350px; width: 100%; text-align: center; }
+    .title { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.7rem; }
+    .subtitle { color: #94a3b8; font-size: 1.15rem; margin-bottom: 2.6rem; }
+    .list { display: flex; flex-direction: column; gap: 0.9rem; text-align: left; }
+    .item { display: flex; align-items: center; gap: 1.4rem; background: rgba(15, 23, 42, 0.7); border: 1px solid #1e293b; border-radius: 0.75rem; padding: 1.1rem 1.6rem; }
+    .num { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: #020617; }
+    .i1 .num { background: #22d3ee; } .i2 .num { background: #34d399; } .i3 .num { background: #a78bfa; } .i4 .num { background: #fbbf24; } .i5 .num { background: #fb7185; }
+    .metric { flex: 0 0 34%; }
+    .metric b { display: block; font-size: 1.15rem; margin-bottom: 0.2rem; }
+    .metric span { color: #64748b; font-size: 0.85rem; }
+    .healthy { flex: 1; color: #94a3b8; font-size: 1rem; line-height: 1.5; }
+    .healthy b { color: #34d399; }
+    .healthy .bad { color: #fb7185; }
+    .foot { margin-top: 2.4rem; color: #475569; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="title">five numbers to check monday morning</div>
+    <div class="subtitle">if you look at nothing else, look at these &middot; each one is a user-facing problem before it is an alert</div>
+    <div class="list">
+      <div class="item i1">
+        <div class="num">1</div>
+        <div class="metric"><b>max children reached</b><span>fpm status page / exporter counter</span></div>
+        <div class="healthy">healthy: <b>0</b> &middot; <span class="bad">rising = pool ceiling hit, requests queuing while CPU may be idle</span></div>
+      </div>
+      <div class="item i2">
+        <div class="num">2</div>
+        <div class="metric"><b>listen queue</b><span>fpm status page &middot; the queue PHP never sees</span></div>
+        <div class="healthy">healthy: <b>0</b> &middot; <span class="bad">any sustained value = users already waiting before PHP runs</span></div>
+      </div>
+      <div class="item i3">
+        <div class="num">3</div>
+        <div class="metric"><b>opcache hit rate + wasted %</b><span>opcache_get_status() / our /metrics route</span></div>
+        <div class="healthy">healthy: <b>&gt; 99% hit, &lt; 5% wasted</b> &middot; <span class="bad">full + wasted = restart storms, compile tax per request</span></div>
+      </div>
+      <div class="item i4">
+        <div class="num">4</div>
+        <div class="metric"><b>memory per worker (RSS)</b><span>ps / htop, measured warm under load</span></div>
+        <div class="healthy">the unit behind <b>max_children = RAM &divide; this</b> &middot; <span class="bad">growing = leak, recycling saves you (pm.max_requests)</span></div>
+      </div>
+      <div class="item i5">
+        <div class="num">5</div>
+        <div class="metric"><b>oldest job age</b><span>queue metrics &middot; not queue depth</span></div>
+        <div class="healthy">healthy: <b>within your SLA</b> &middot; <span class="bad">depth lies, 10k fast jobs is fine, 10 slow ones may not be</span></div>
+      </div>
+    </div>
+    <div class="foot">everything on this list is one command in the demo repo &middot; github.com/dragoonis/scaling-php</div>
+  </div>
+</body>
+</html>

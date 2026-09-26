@@ -8,15 +8,10 @@ services:
       - "8088:80"
     env_file:
       - .env
-    environment:
-      APP_ENV: prod
-      DATABASE_URL: "mysql://app:app@database:3306/app?serverVersion=8.0&charset=utf8mb4"
     volumes:
       - .:/var/www/html
-      - ./docker/fpm.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
-    depends_on:
-      database:
-        condition: service_healthy
+      - ./docker/${FPM_CONF:-fpm.conf}:/usr/local/etc/php-fpm.d/zz-docker.conf
+      - ./docker/symfony.prod.ini:/usr/local/etc/php/conf.d/symfony.prod.ini
     networks:
       - app-net
 
@@ -34,12 +29,7 @@ services:
     env_file:
       - .env
     environment:
-      APP_ENV: prod
-      DATABASE_URL: "mysql://app:app@database:3306/app?serverVersion=8.0&charset=utf8mb4"
       SERVER_NAME: ":80"
-    depends_on:
-      database:
-        condition: service_healthy
     networks:
       - app-net
 
@@ -54,18 +44,10 @@ services:
       - .:/var/www/html
       - caddy_data:/data
       - caddy_config:/config
-      - ./docker/Caddyfile:/etc/frankenphp/Caddyfile
     tty: true
     env_file:
       - .env
-    environment:
-      APP_RUNTIME: "Runtime\\FrankenPhpSymfony\\Runtime"
-      APP_ENV: prod
-      DATABASE_URL: "mysql://app:app@database:3306/app?serverVersion=8.0&charset=utf8mb4"
-      SERVER_NAME: ":80"
-    depends_on:
-      database:
-        condition: service_healthy
+    command: ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=80", "--admin-host=0.0.0.0", "--admin-port=2019", "--workers=${OCTANE_WORKERS:-16}", "--max-requests=${OCTANE_MAX_REQUESTS:-250}", "--caddyfile=/var/www/html/docker/Caddyfile.octane"]
     networks:
       - app-net
 
@@ -95,6 +77,19 @@ services:
     networks:
       - app-net
 
+  cbox-fpm-exporter:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.fpm-exporter
+    depends_on:
+      - app
+    volumes:
+      - ./docker/fpm-exporter.yaml:/etc/fpm-exporter.yaml:ro
+    ports:
+      - "9114:9114"
+    networks:
+      - app-net
+
   prometheus:
     image: prom/prometheus:v2.53.4
     volumes:
@@ -115,6 +110,8 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: symfony
       GF_SECURITY_ADMIN_PASSWORD: symfony
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
     networks:

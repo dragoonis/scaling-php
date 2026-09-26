@@ -1,0 +1,8 @@
+FROM debian:12-slim
+
+ARG TARGETARCH
+ADD https://github.com/cboxdk/fpm-exporter/releases/download/v3.1.0/fpm-exporter-linux-${TARGETARCH} /usr/local/bin/fpm-exporter
+RUN chmod +x /usr/local/bin/fpm-exporter
+
+EXPOSE 9114
+ENTRYPOINT ["/usr/local/bin/fpm-exporter", "serve", "--config", "/etc/fpm-exporter.yaml", "--autodiscover=false"]

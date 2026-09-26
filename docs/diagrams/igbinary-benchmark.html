@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>igbinary Benchmark</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; padding: 2rem; color: white; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #a78bfa; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+    .diagram-container { background: rgba(15, 23, 42, 0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.5rem; overflow-x: auto; }
+    svg { width: 100%; min-width: 900px; display: block; }
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>igbinary vs PHP serialize</h1>
+      </div>
+      <p class="subtitle">Measured on this repo - PHP 8.4, phpredis 6.3, igbinary 3.2 - session payload stored in Redis + local payloads</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1000 620">
+        <defs>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <text x="40" y="50" fill="white" font-size="13" font-weight="600">Redis memory per session key (phpredis, real MEMORY USAGE)</text>
+        <rect x="60" y="70" width="600" height="34" rx="4" fill="rgba(8, 51, 68, 0.6)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="672" y="92" fill="#22d3ee" font-size="12" font-weight="700">3,128 B   PHP serializer</text>
+        <rect x="60" y="114" width="305" height="34" rx="4" fill="rgba(76, 29, 149, 0.6)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="377" y="136" fill="#a78bfa" font-size="12" font-weight="700">1,592 B   igbinary   -49%</text>
+        <text x="60" y="172" fill="#94a3b8" font-size="10">1,000 sessions: 3,047 KiB vs 1,547 KiB - half the Redis RAM, half the bytes on the wire</text>
+        <text x="60" y="190" fill="#94a3b8" font-size="10">round-trip via phpredis: SET 15.1k -> 15.9k ops/s (+5%), GET 15.9k -> 16.8k ops/s (+6%)</text>
+
+        <text x="40" y="240" fill="white" font-size="13" font-weight="600">Serialized size (bytes, lower is better)</text>
+        <text x="60" y="266" fill="#94a3b8" font-size="10">session ~2.7KB</text>
+        <rect x="230" y="254" width="277" height="16" rx="3" fill="rgba(8, 51, 68, 0.6)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="515" y="267" fill="#22d3ee" font-size="10">2,774</text>
+        <rect x="230" y="274" width="146" height="16" rx="3" fill="rgba(76, 29, 149, 0.6)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="384" y="287" fill="#a78bfa" font-size="10">1,462  -47%</text>
+
+        <text x="60" y="322" fill="#94a3b8" font-size="10">100 products ~35KB</text>
+        <rect x="230" y="310" width="355" height="16" rx="3" fill="rgba(8, 51, 68, 0.6)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="593" y="323" fill="#22d3ee" font-size="10">35,508</text>
+        <rect x="230" y="330" width="161" height="16" rx="3" fill="rgba(76, 29, 149, 0.6)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="399" y="343" fill="#a78bfa" font-size="10">16,112  -55%</text>
+
+        <text x="60" y="378" fill="#94a3b8" font-size="10">nested array ~125KB</text>
+        <rect x="230" y="366" width="500" height="16" rx="3" fill="rgba(8, 51, 68, 0.6)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="738" y="379" fill="#22d3ee" font-size="10">125,184</text>
+        <rect x="230" y="386" width="158" height="16" rx="3" fill="rgba(76, 29, 149, 0.6)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="396" y="399" fill="#a78bfa" font-size="10">39,557  -68%</text>
+
+        <text x="40" y="450" fill="white" font-size="13" font-weight="600">Unserialize throughput (ops/s, higher is better)</text>
+        <text x="60" y="476" fill="#94a3b8" font-size="10">session ~2.7KB</text>
+        <rect x="230" y="464" width="287" height="16" rx="3" fill="rgba(8, 51, 68, 0.6)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="525" y="477" fill="#22d3ee" font-size="10">287k</text>
+        <rect x="230" y="484" width="257" height="16" rx="3" fill="rgba(76, 29, 149, 0.6)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="495" y="497" fill="#a78bfa" font-size="10">257k  about even on small payloads</text>
+
+        <text x="60" y="532" fill="#94a3b8" font-size="10">100 products</text>
+        <rect x="230" y="520" width="233" height="16" rx="3" fill="rgba(8, 51, 68, 0.6)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="471" y="533" fill="#22d3ee" font-size="10">33.3k</text>
+        <rect x="230" y="540" width="301" height="16" rx="3" fill="rgba(76, 29, 149, 0.6)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="539" y="553" fill="#a78bfa" font-size="10">43.0k  +29%</text>
+
+        <text x="60" y="588" fill="#94a3b8" font-size="10">nested ~125KB</text>
+        <rect x="230" y="576" width="161" height="16" rx="3" fill="rgba(8, 51, 68, 0.6)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="399" y="589" fill="#22d3ee" font-size="10">3.2k</text>
+        <rect x="230" y="596" width="311" height="16" rx="3" fill="rgba(76, 29, 149, 0.6)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="549" y="609" fill="#a78bfa" font-size="10">6.2k  +94%</text>
+
+        <rect x="700" y="250" width="16" height="10" rx="2" fill="rgba(8, 51, 68, 0.6)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="722" y="259" fill="#94a3b8" font-size="9">PHP serialize</text>
+        <rect x="820" y="250" width="16" height="10" rx="2" fill="rgba(76, 29, 149, 0.6)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="842" y="259" fill="#94a3b8" font-size="9">igbinary</text>
+      </svg>
+    </div>
+
+    <p class="footer">scaling-php demo - php artisan app:igbinary-bench - json for reference was bigger than igbinary and slower to decode in every test</p>
+  </div>
+</body>
+</html>

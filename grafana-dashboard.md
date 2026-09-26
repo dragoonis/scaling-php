@@ -1,3 +1,5 @@
+> ⚠️ **Legacy doc:** written for the Symfony version of this demo. The commands and endpoints may not match the Laravel branch yet.
+
 # Web Server Monitoring Dashboards Guide
 
 A comprehensive guide to understanding and using two Grafana dashboards for full-stack web server monitoring: **FrankenPHP + Caddy** optimized for Symfony applications and **PHP-FPM Performance** monitoring.
@@ -124,7 +126,7 @@ Comprehensive HTTP request analysis:
 
 ### Dashboard Structure
 
-The PHP-FPM dashboard is organized into two main collapsible sections:
+The PHP-FPM dashboard is organized into collapsible sections:
 
 #### 1. PHP-FPM Metrics Section
 
@@ -164,6 +166,13 @@ The PHP-FPM dashboard is organized into two main collapsible sections:
   - Out-of-memory restarts (OOM)
   - Hash table full restarts
   - Manual restarts
+
+#### 3. App Metrics (beberlei/metrics)
+
+Numbers the app counts itself, not the infrastructure. Details in [app-metrics.md](app-metrics.md).
+
+- **Orders Processed vs Failed / sec** - `rate(app_orders_processed_total[...])` against `rate(app_orders_failed_total[...])`. Dispatch with `fail=1` and the failed line takes over
+- **Order Job Duration (last, ms)** - `app_orders_job_duration_ms`, the duration of the last processed `ProcessOrder` job
 
 ### Key Dashboard Variables
 - **Datasource** - Prometheus instance selector

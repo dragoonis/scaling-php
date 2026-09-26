@@ -12,6 +12,11 @@ scrape_configs:
     static_configs:
       - targets: ['app:80']
 
+  - job_name: 'cbox-fpm-exporter'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['cbox-fpm-exporter:9114']
+
   - job_name: 'caddy'
     metrics_path: /metrics
     static_configs:

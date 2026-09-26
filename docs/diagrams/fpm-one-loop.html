@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The One Loop</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem; color: white; }
+    .slide { max-width: 1400px; text-align: center; }
+    .label { color: #22d3ee; font-size: 1.3rem; font-weight: 600; letter-spacing: 0.15em; margin-bottom: 3rem; }
+    .loop { font-size: 2.6rem; font-weight: 700; line-height: 1.6; margin-bottom: 3.5rem; }
+    .loop .fork { color: #34d399; }
+    .loop .kill { color: #fb7185; }
+    .loop .else { color: #64748b; }
+    .breathe { display: inline-block; background: rgba(15,23,42,0.7); border: 1px solid #1e293b; border-radius: 0.75rem; padding: 1.6rem 2.6rem; font-size: 1.35rem; color: #94a3b8; text-align: left; line-height: 2; }
+    .breathe b { color: white; }
+    .foot { margin-top: 2.5rem; color: #64748b; font-size: 1.05rem; }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="label">PM = DYNAMIC IS ONE LOOP, ONCE PER SECOND</div>
+    <div class="loop">
+      idle &lt; min_spare? <span class="fork">fork one</span><br>
+      idle &gt; max_spare? <span class="kill">kill one</span><br>
+      <span class="else">otherwise: do nothing</span>
+    </div>
+    <div class="breathe">
+      quiet&nbsp;&nbsp;&nbsp;<b>50 workers</b> (parked at max_spare)<br>
+      burst&nbsp;&nbsp;&nbsp;<b>72 workers</b> (grows toward max_children 300)<br>
+      after&nbsp;&nbsp;&nbsp;glides back to <b>50</b> and parks
+    </div>
+    <div class="foot">the pool never returns to start_servers &middot; it parks wherever the spare bounds allow</div>
+  </div>
+</body>
+</html>

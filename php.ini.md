@@ -1,3 +1,5 @@
+> ⚠️ **Legacy doc:** written for the Symfony version of this demo. The commands and endpoints may not match the Laravel branch yet.
+
 # PHP OPcache
 
 This guide provides a complete walkthrough of PHP OPcache setup, configuration, monitoring, and optimization.

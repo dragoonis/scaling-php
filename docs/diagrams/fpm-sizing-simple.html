@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>max_children Formula</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem; color: white; }
+    .slide { max-width: 1400px; text-align: center; }
+    .label { color: #22d3ee; font-size: 1.4rem; font-weight: 600; letter-spacing: 0.15em; margin-bottom: 3rem; }
+    .formula { font-size: 3.4rem; font-weight: 700; line-height: 1.35; margin-bottom: 1.2rem; }
+    .formula .frac { color: #34d399; }
+    .formula .op { color: #64748b; }
+    .buffer { color: #94a3b8; font-size: 1.1rem; margin-bottom: 4rem; }
+    .example { display: inline-block; background: rgba(15, 23, 42, 0.7); border: 1px solid #1e293b; border-radius: 0.75rem; padding: 1.5rem 2.5rem; font-size: 1.5rem; color: #94a3b8; }
+    .example b { color: #34d399; font-size: 1.9rem; }
+    .foot { margin-top: 3.5rem; color: #475569; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="label">PHP-FPM POOL SIZING</div>
+    <div class="formula">
+      max_children <span class="op">=</span> <span class="frac">RAM for PHP</span> <span class="op">&divide;</span> <span class="frac">avg process size</span>
+    </div>
+    <div class="buffer">(keep a ~10% safety buffer &middot; measure process size under load, don't guess)</div>
+    <div class="example">16 GB box &rarr; 12 GB for PHP &times; 0.9 &divide; 255 MB &rarr; <b>~42 children</b></div>
+    <div class="foot">too low = requests queue while CPU idles &nbsp;&middot;&nbsp; too high = swap / OOM killer</div>
+  </div>
+</body>
+</html>

@@ -106,9 +106,9 @@ function poll(string $key, array $t, array &$prev, float $now): array
             $out['online'] = true;
             $out['busy'] = (int) prom_sum($body, 'frankenphp_busy_threads');
             $out['threads'] = (int) prom_sum($body, 'frankenphp_total_threads');
-            $reqs = prom_sum($body, 'caddy_http_requests_total');
+            $reqs = prom_max($body, 'caddy_http_requests_total');
             if (0.0 === $reqs) {
-                $reqs = prom_sum($body, 'caddy_http_request_duration_seconds_count');
+                $reqs = prom_max($body, 'caddy_http_request_duration_seconds_count');
             }
             $out['reqps'] = rate($key, $reqs, $now, $prev);
         }
@@ -124,20 +124,44 @@ function poll(string $key, array $t, array &$prev, float $now): array
     return $out;
 }
 
-/** Per-second rate from a monotonic counter, remembering the last sample per runtime. */
+/** Per-second rate from a monotonic counter, averaged over a 10s sliding window
+ *  so ramp-up spikes and single-poll jitter do not misrank the runtimes. */
 function rate(string $key, float $total, float $now, array &$prev): float
 {
-    $rps = 0.0;
-    if (isset($prev[$key])) {
-        [$pt, $pv] = $prev[$key];
-        $dt = $now - $pt;
-        if ($dt > 0 && $total >= $pv) {
-            $rps = ($total - $pv) / $dt;
+    $window = 10.0;
+    $samples = $prev[$key] ?? [];
+    $samples[] = [$now, $total];
+    while (count($samples) > 2 && ($now - $samples[1][0]) >= $window) {
+        array_shift($samples);
+    }
+    $prev[$key] = $samples;
+
+    [$pt, $pv] = $samples[0];
+    $dt = $now - $pt;
+    if ($dt <= 0 || $total < $pv) {
+        return 0.0;
+    }
+
+    return ($total - $pv) / $dt;
+}
+
+/** Max across samples matching $metric. Caddy counts one request once per handler
+ *  in the middleware chain (php, rewrite, vars, ...), and the chain length differs
+ *  between the classic and worker Caddyfiles - summing labels multiplies classic's
+ *  count 3x. Every handler sees each request once, so the max is the true total. */
+function prom_max(string $body, string $metric): float
+{
+    $max = 0.0;
+    foreach (explode("\n", $body) as $line) {
+        if ('' === $line || '#' === $line[0]) {
+            continue;
+        }
+        if (preg_match('/^'.preg_quote($metric, '/').'(\{[^}]*\})?\s+([0-9.eE+-]+)/', $line, $m)) {
+            $max = max($max, (float) $m[2]);
         }
     }
-    $prev[$key] = [$now, $total];
 
-    return $rps;
+    return $max;
 }
 
 /** Sum every Prometheus sample whose name matches $metric (ignoring labels). */

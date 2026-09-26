@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Horizon and SLA Autoscaling</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem; color: white; }
+    .slide { max-width: 1420px; text-align: center; }
+    .title { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.7rem; }
+    .subtitle { color: #94a3b8; font-size: 1.15rem; margin-bottom: 2.8rem; }
+    .cols { display: flex; gap: 1.75rem; justify-content: center; margin-bottom: 2.4rem; }
+    .col { flex: 1; background: rgba(15, 23, 42, 0.7); border: 1px solid #1e293b; border-radius: 1rem; padding: 1.9rem 2rem; text-align: left; }
+    .col.horizon { border-top: 3px solid #fb7185; }
+    .col.autoscale { border-top: 3px solid #34d399; }
+    .col .name { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .col.horizon .name { color: #fb7185; }
+    .col.autoscale .name { color: #34d399; }
+    .col .q { color: #64748b; font-size: 0.95rem; margin-bottom: 1.2rem; }
+    .col ul { list-style: none; color: #94a3b8; font-size: 1rem; line-height: 1.75; }
+    .col li::before { content: "\2022  "; color: #475569; }
+    .col b { color: white; }
+    .together { display: inline-block; background: rgba(120, 53, 15, 0.25); border: 1px solid #fbbf24; border-radius: 0.75rem; padding: 1.2rem 2.4rem; color: #fbbf24; font-size: 1.2rem; font-weight: 600; margin-bottom: 1.6rem; }
+    .foot { color: #475569; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="title">horizon balances. the autoscaler sizes.</div>
+    <div class="subtitle">they answer different questions, and they are not enemies</div>
+    <div class="cols">
+      <div class="col horizon">
+        <div class="name">Laravel Horizon</div>
+        <div class="q">"how do I split my workers across queues?"</div>
+        <ul>
+          <li><b>balances</b> a worker pool across queues by load</li>
+          <li>the pool size itself: <b>maxProcesses, still a number you pick</b></li>
+          <li>beautiful dashboard, metrics, failed-job UI</li>
+          <li>redis only</li>
+        </ul>
+      </div>
+      <div class="col autoscale">
+        <div class="name">SLA autoscaling</div>
+        <div class="q">"how many workers should exist at all?"</div>
+        <ul>
+          <li><b>derives</b> the count from an SLA + Little's Law, every 5s</li>
+          <li>capped by measured host CPU/RAM, not a guess</li>
+          <li>failure fuse: an outage is not load</li>
+          <li>any driver: redis, database, SQS</li>
+        </ul>
+      </div>
+    </div>
+    <div class="together">the gap in both worlds was never balancing, it was that someone still picks the number. stop picking the number.</div>
+    <div class="foot">measured in this repo: 3,000-job burst sized itself 1 &rarr; 16 workers and back, zero config edits, zero lost jobs</div>
+  </div>
+</body>
+</html>

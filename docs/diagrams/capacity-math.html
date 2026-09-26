@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capacity Is Math</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem; color: white; }
+    .slide { max-width: 1450px; text-align: center; }
+    .title { font-size: 2.6rem; font-weight: 700; margin-bottom: 0.8rem; }
+    .subtitle { color: #94a3b8; font-size: 1.15rem; margin-bottom: 3rem; }
+    .cols { display: flex; gap: 1.75rem; justify-content: center; }
+    .col { flex: 1; background: rgba(15, 23, 42, 0.7); border: 1px solid #1e293b; border-radius: 1rem; padding: 2rem 2.25rem; text-align: left; }
+    .col.web { border-top: 3px solid #22d3ee; }
+    .col.queue { border-top: 3px solid #34d399; }
+    .col .kind { font-size: 1rem; font-weight: 600; letter-spacing: 0.12em; margin-bottom: 1.4rem; }
+    .col.web .kind { color: #22d3ee; }
+    .col.queue .kind { color: #34d399; }
+    .col .formula { font-size: 1.55rem; font-weight: 700; line-height: 1.5; margin-bottom: 1.2rem; }
+    .col .formula span { color: #64748b; }
+    .col .example { color: #94a3b8; font-size: 1.05rem; line-height: 1.7; }
+    .col .example b { color: white; }
+    .principle { margin-top: 2.6rem; display: inline-block; background: rgba(120, 53, 15, 0.25); border: 1px solid #fbbf24; border-radius: 0.75rem; padding: 1.2rem 2.5rem; color: #fbbf24; font-size: 1.3rem; font-weight: 600; }
+    .foot { margin-top: 2.4rem; color: #475569; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="title">capacity is math, not guessing</div>
+    <div class="subtitle">the two pools every Laravel app runs, sized by the same idea: measure one unit, derive the count</div>
+    <div class="cols">
+      <div class="col web">
+        <div class="kind">WEB REQUESTS &middot; PHP-FPM</div>
+        <div class="formula">max_children <span>=</span> RAM for PHP <span>&divide;</span> avg process size</div>
+        <div class="example">
+          16 GB box &rarr; 12 GB for PHP &times; 0.9 &divide; 255 MB &rarr; <b>~42 children</b><br>
+          unit to measure: <b>MB per worker under load</b>
+        </div>
+      </div>
+      <div class="col queue">
+        <div class="kind">QUEUE JOBS &middot; WORKERS</div>
+        <div class="formula">workers <span>=</span> (pending <span>&divide;</span> SLA seconds) <span>&divide;</span> jobs/s per worker</div>
+        <div class="example">
+          100 pending &divide; 60s SLA &divide; 10 jobs/s &rarr; <b>1 worker</b><br>
+          unit to measure: <b>jobs/s one worker sustains</b>
+        </div>
+      </div>
+    </div>
+    <div class="principle">too low = queues while hardware idles &nbsp;&middot;&nbsp; too high = swap, OOM, thrash</div>
+    <div class="foot">both formulas re-run when reality changes: traffic, payload size, deploys &nbsp;&middot;&nbsp; alert when observed drifts from derived</div>
+  </div>
+</body>
+</html>

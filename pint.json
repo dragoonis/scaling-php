@@ -1,0 +1,11 @@
+{
+    "preset": "laravel",
+    "exclude": [
+        "bootstrap/cache",
+        "storage",
+        "docs"
+    ],
+    "notPath": [
+        "public/agent-pull.php"
+    ]
+}

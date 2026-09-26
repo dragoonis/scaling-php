@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Queue Autoscale Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem; color: white; }
+    .slide { max-width: 1450px; text-align: center; }
+    .title { font-size: 2.4rem; font-weight: 700; margin-bottom: 0.7rem; }
+    .title span { color: #34d399; }
+    .subtitle { color: #94a3b8; font-size: 1.1rem; margin-bottom: 2.6rem; }
+    .chart { display: flex; gap: 0.9rem; justify-content: center; align-items: flex-end; height: 300px; margin-bottom: 0.8rem; }
+    .col { width: 120px; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
+    .bar { border-radius: 0.4rem 0.4rem 0 0; background: linear-gradient(180deg, #34d399, #065f46); }
+    .col.capped .bar { background: linear-gradient(180deg, #fbbf24, #92400e); }
+    .val { font-size: 1.3rem; font-weight: 700; color: #34d399; margin-bottom: 0.4rem; }
+    .col.capped .val { color: #fbbf24; }
+    .pending { font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem; }
+    .labels { display: flex; gap: 0.9rem; justify-content: center; margin-bottom: 2.4rem; }
+    .labels div { width: 120px; color: #94a3b8; font-size: 0.95rem; }
+    .row { display: flex; gap: 1.5rem; justify-content: center; }
+    .fact { background: rgba(15, 23, 42, 0.7); border: 1px solid #1e293b; border-radius: 0.75rem; padding: 1.1rem 1.8rem; font-size: 1.05rem; color: #94a3b8; }
+    .fact b { color: white; display: block; font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .fact.emerald b { color: #34d399; }
+    .fact.amber b { color: #fbbf24; }
+    .foot { margin-top: 2.4rem; color: #475569; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="title">3,000 jobs hit the queue. <span>nobody touched a config.</span></div>
+    <div class="subtitle">measured on this repo: cboxdk/laravel-queue-autoscale, SLA "picked up within 10s", jobs of 100ms, worker cap 16</div>
+    <div class="chart">
+      <div class="col"><div class="val">1</div><div class="pending">3,000 pending</div><div class="bar" style="height: 6%"></div></div>
+      <div class="col"><div class="val">6</div><div class="pending">2,910</div><div class="bar" style="height: 34%"></div></div>
+      <div class="col"><div class="val">10</div><div class="pending">2,619</div><div class="bar" style="height: 58%"></div></div>
+      <div class="col"><div class="val">14</div><div class="pending">2,209</div><div class="bar" style="height: 80%"></div></div>
+      <div class="col capped"><div class="val">16</div><div class="pending">956</div><div class="bar" style="height: 92%"></div></div>
+      <div class="col capped"><div class="val">16</div><div class="pending">0 pending</div><div class="bar" style="height: 92%"></div></div>
+    </div>
+    <div class="labels">
+      <div>t=0</div><div>5s</div><div>10s</div><div>15s</div><div>25s</div><div>35s</div>
+    </div>
+    <div class="row">
+      <div class="fact emerald"><b>35s</b>burst fully drained</div>
+      <div class="fact"><b>3,000 / 3,000</b>jobs done, zero lost</div>
+      <div class="fact amber"><b>30 &rarr; 16</b>Little's Law asked for 30, resource cap won</div>
+      <div class="fact"><b>SIGTERM</b>in-flight jobs finish before workers die</div>
+    </div>
+    <div class="foot">workers = (pending &divide; SLA seconds) &divide; jobs/s per worker &middot; re-evaluated every 5s &middot; supervisor numprocs was a guess</div>
+  </div>
+</body>
+</html>

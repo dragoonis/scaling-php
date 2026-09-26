@@ -4,7 +4,7 @@ import { htmlReport } from 'https://raw.githubusercontent.com/benc-uk/k6-reporte
 import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.1/index.js";
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8088';
-const ENDPOINT = BASE_URL + '/en/products/projection';
+const ENDPOINT = BASE_URL + '/products/cached';
 
 export let options = {
     insecureSkipTLSVerify: true,

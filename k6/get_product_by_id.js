@@ -5,7 +5,7 @@ import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.1/index.js";
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
 const PRODUCT_ID = __ENV.PRODUCT_ID || '105069';
-const ENDPOINT = BASE_URL + '/en/products/db/' + PRODUCT_ID;
+const ENDPOINT = BASE_URL + '/products/' + PRODUCT_ID;
 
 export let options = {
     vus: 100,
