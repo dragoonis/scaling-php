@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a2c3d3389eff324a1555cf552845795d",
+    "content-hash": "66db0a6ea2a8eada51c91bc170967ed8",
     "packages": [
         {
             "name": "beberlei/metrics",
@@ -1378,6 +1378,85 @@
                 }
             ],
             "time": "2026-07-17T13:53:03+00:00"
+        },
+        {
+            "name": "kevariable/laravel-metrics",
+            "version": "v0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/kevariable/laravel-metrics.git",
+                "reference": "dc965f0cea26b0f2f06d91f2010b7fdb4a1e4455"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/kevariable/laravel-metrics/zipball/dc965f0cea26b0f2f06d91f2010b7fdb4a1e4455",
+                "reference": "dc965f0cea26b0f2f06d91f2010b7fdb4a1e4455",
+                "shasum": ""
+            },
+            "require": {
+                "beberlei/metrics": "^3.0",
+                "illuminate/contracts": "^12.0|^13.0",
+                "illuminate/http": "^12.0|^13.0",
+                "illuminate/routing": "^12.0|^13.0",
+                "illuminate/support": "^12.0|^13.0",
+                "php": "^8.4",
+                "promphp/prometheus_client_php": "^2.10"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/octane": "^2.6",
+                "laravel/pint": "^1.20",
+                "orchestra/testbench": "^10.0|^11.0",
+                "phpunit/phpunit": "^11.5|^12.0|^13.0"
+            },
+            "suggest": {
+                "ext-apcu": "Store Prometheus metrics in APCu on a single server",
+                "ext-redis": "Store Prometheus metrics in Redis, shared across PHP-FPM workers"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Metrics": "Kevariable\\Metrics\\Facades\\Metrics"
+                    },
+                    "providers": [
+                        "Kevariable\\Metrics\\MetricsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "Kevariable\\Metrics\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kevin Abrar Khansa",
+                    "email": "kevariable@gmail.com"
+                }
+            ],
+            "description": "Send app metrics from Laravel to Prometheus, StatsD, OpenTelemetry, CloudWatch and more, with one API. A Laravel bridge for beberlei/metrics.",
+            "keywords": [
+                "Metrics",
+                "laravel",
+                "observability",
+                "octane",
+                "opentelemetry",
+                "prometheus",
+                "statsd"
+            ],
+            "support": {
+                "issues": "https://github.com/kevariable/laravel-metrics/issues",
+                "source": "https://github.com/kevariable/laravel-metrics/tree/v0.1.0"
+            },
+            "time": "2026-09-26T12:47:07+00:00"
         },
         {
             "name": "laminas/laminas-diactoros",

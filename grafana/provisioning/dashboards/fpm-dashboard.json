@@ -2221,7 +2221,7 @@
       },
       "id": 205,
       "panels": [],
-      "title": "App Metrics (beberlei/metrics)",
+      "title": "App Metrics (kevariable/laravel-metrics)",
       "type": "row"
     },
     {
@@ -2399,12 +2399,21 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "app_orders_job_duration_ms",
-          "legendFormat": "duration",
+          "expr": "sum(rate(app_orders_job_duration_ms_sum[$__rate_interval])) / sum(rate(app_orders_job_duration_ms_count[$__rate_interval]))",
+          "legendFormat": "avg",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(app_orders_job_duration_ms_bucket[$__rate_interval])))",
+          "legendFormat": "p95",
+          "refId": "B"
         }
       ],
-      "title": "Order Job Duration (last, ms)",
+      "title": "Order Job Duration (avg and p95, ms)",
       "type": "timeseries"
     }
   ],

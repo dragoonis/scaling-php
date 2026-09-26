@@ -7,13 +7,12 @@
     "license": "MIT",
     "require": {
         "php": "^8.4",
-        "beberlei/metrics": "^3.0",
         "cboxdk/laravel-queue-autoscale": "^4.0",
         "cboxdk/laravel-queue-metrics": "^3.2",
+        "kevariable/laravel-metrics": "^0.1",
         "laravel/framework": "^13.17",
         "laravel/octane": "^2.19",
-        "laravel/tinker": "^3.0",
-        "promphp/prometheus_client_php": "^2.15"
+        "laravel/tinker": "^3.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

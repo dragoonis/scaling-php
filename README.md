@@ -61,7 +61,7 @@ make up-exporter  # php-fpm metrics exporter
 - Grafana: http://localhost:3000 (view without login; admin is symfony/symfony)
 - Prometheus: http://localhost:9090
 - Raw metrics: :8080/metrics and :8081/metrics (FrankenPHP), :8088/fpm-status (FPM)
-- App metrics (orders processed/failed, via beberlei/metrics): :8088/metrics, see
+- App metrics (orders processed/failed, via kevariable/laravel-metrics): :8088/metrics, see
   **[app-metrics.md](app-metrics.md)**
 
 `make urls` prints every URL.

@@ -4,12 +4,13 @@ The exporters tell you how the **infrastructure** is doing (FPM workers, OPcache
 They cannot tell you how the **business** is doing: orders processed, orders failed, how
 long a job took. For that the app has to count things itself.
 
-[beberlei/metrics](https://github.com/beberlei/metrics) is a small library that gives you
-one API for that, whatever backend stores the numbers. Think `Log::info()` or
+[kevariable/laravel-metrics](https://github.com/kevariable/laravel-metrics) gives you one
+API for that, whatever backend stores the numbers. It is a Laravel bridge for
+[beberlei/metrics](https://github.com/beberlei/metrics). Think `Log::info()` or
 `Cache::put()`, but for metrics:
 
 ```php
-use App\Metrics\Metrics;
+use Kevariable\Metrics\Facades\Metrics;
 
 Metrics::increment('orders.processed_total');
 Metrics::timing('orders.job_duration_ms', 412.5);
@@ -57,7 +58,7 @@ Grafana ◄──────────── PromQL ────────�
 |---|---|---|
 | `app_orders_processed_total` | counter | `ProcessOrder` success |
 | `app_orders_failed_total` | counter | `ProcessOrder` failure |
-| `app_orders_job_duration_ms` | gauge (last value) | `ProcessOrder` success |
+| `app_orders_job_duration_ms` | histogram (`_bucket`, `_sum`, `_count`) | `ProcessOrder` success |
 
 Grafana: **PHP-FPM Performance Dashboard**, row **App Metrics (beberlei/metrics)**.
 
@@ -76,24 +77,23 @@ Add `&fail=1` to the dispatch URL to watch the failed line climb.
 
 | File | What |
 |---|---|
-| `config/metrics.php` | collector choice, namespace, Redis storage |
-| `app/Metrics/MetricsServiceProvider.php` | builds the collector with `Beberlei\Metrics\Factory`, flushes on terminate and after jobs |
-| `app/Metrics/Metrics.php` | the `Metrics` facade |
-| `routes/api.php` | `/metrics` appends the library output to the hand written OPcache and queue gauges |
+| `vendor/kevariable/laravel-metrics` | the package: facade, collectors, flushing, fake |
+| `.env` | `METRICS_COLLECTOR=prometheus`, `METRICS_NAMESPACE=app`, `METRICS_REDIS_DB=2` |
+| `app/Jobs/ProcessOrder.php` | the instrumentation |
+| `routes/api.php` | `/metrics` appends `Metrics::renderPrometheus()` to the hand written OPcache and queue gauges |
 | `tests/Feature/MetricsTest.php` | runs against in memory storage, no Redis needed |
 
-It is written so it can be lifted out into a standalone Laravel package later: nothing
-in `app/Metrics` knows about orders or this demo.
+Everything else (drivers, `Metrics::fake()`, the optional built in scrape route) is in the
+package README.
 
 ## Gotchas
 
 - **PHP 8.4+.** beberlei/metrics v3 requires it, so `composer.json` now says `^8.4`. The
   containers already run 8.4; a host still on 8.3 cannot `composer install` any more.
-- **Tags are broken on the Prometheus collector in v3.0.0.** `increment('x', ['status' =>
-  'ok'])` registers the tag *value* as the label *name* and renders `{ok="ok"}`. Until it
-  is fixed upstream, encode the dimension in the metric name (`orders.processed_total`,
-  `orders.failed_total`) instead of a tag.
-- **`timing()` is a gauge on Prometheus**, it keeps the last value, not a histogram. Good
-  enough to eyeball, not for p95s.
+- **Same tag keys every time.** Prometheus needs a metric to always carry the same tag
+  keys. The package reports a mismatch through the exception handler instead of mixing
+  them up.
+- **Timings are histograms**, so Grafana can show averages and p95s:
+  `histogram_quantile(0.95, sum by (le) (rate(app_orders_job_duration_ms_bucket[1m])))`
 - **Edited PHP code?** Prod OPcache does not revalidate, run `make fpm-reload` or the
   `/metrics` pool keeps serving the old route.

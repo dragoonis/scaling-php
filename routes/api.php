@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
-use Prometheus\CollectorRegistry;
-use Prometheus\RenderTextFormat;
+use Kevariable\Metrics\Facades\Metrics;
 
 Route::get('/metrics', function () {
     $status = function_exists('opcache_get_status') ? opcache_get_status(false) : false;
@@ -65,7 +64,7 @@ Route::get('/metrics', function () {
 
     if (config('metrics.default') === 'prometheus') {
         try {
-            $out .= (new RenderTextFormat)->render(app(CollectorRegistry::class)->getMetricFamilySamples());
+            $out .= Metrics::renderPrometheus();
         } catch (Throwable) {
         }
     }
