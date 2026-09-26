@@ -237,6 +237,42 @@ Go to **URL:** http://localhost:9253/metrics
 - `phpfpm_slow_requests` - Number of slow requests
 - `phpfpm_accepted_connections` - Total accepted connections
 
+### A dedicated pool for metrics
+
+Prometheus scrapes our own `/metrics` route (OPcache, queue and [app metrics](app-metrics.md))
+once per second. That route is PHP, so it needs an FPM worker like any other request. When
+the main pool is saturated, the scrape waits in the same queue as the k6 traffic and the
+OPcache and queue panels go blank exactly when you want to look at them.
+
+So `/metrics` gets its own tiny pool, the standard production fix:
+
+```ini
+[metrics]
+user = www-data
+group = www-data
+listen = 9001
+pm = static
+pm.max_children = 2
+pm.max_requests = 1000
+```
+
+nginx routes that one path to it, everything else still goes to `www` on 9000:
+
+```nginx
+location = /metrics {
+    fastcgi_pass                  127.0.0.1:9001;
+    include                       fastcgi_params;
+    fastcgi_param DOCUMENT_ROOT   $realpath_root;
+    fastcgi_param SCRIPT_FILENAME $realpath_root/index.php;
+    fastcgi_param SCRIPT_NAME     /index.php;
+}
+```
+
+- `make fpm-ps` shows `pool www` and two `pool metrics` processes
+- both exporters only read the `www` status page, so the scrapes never show up as app
+  traffic in the dashboards
+- the nginx config is baked into the image: `make rebuild` after pulling this change
+
 ### The production-grade alternative: cboxdk/fpm-exporter
 
 We also run [cboxdk/fpm-exporter](https://cbox.dk/packages/fpm-exporter) side by

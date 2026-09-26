@@ -4,8 +4,83 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4e0909c95535004b61c3d39c0920198b",
+    "content-hash": "a2c3d3389eff324a1555cf552845795d",
     "packages": [
+        {
+            "name": "beberlei/metrics",
+            "version": "v3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/beberlei/metrics.git",
+                "reference": "bd85fb99312353adfe9e4f21d6f30df8457737f8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/beberlei/metrics/zipball/bd85fb99312353adfe9e4f21d6f30df8457737f8",
+                "reference": "bd85fb99312353adfe9e4f21d6f30df8457737f8",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.4",
+                "psr/log": "^3.0"
+            },
+            "conflict": {
+                "symfony/framework-bundle": "<6.4"
+            },
+            "require-dev": {
+                "aws/aws-sdk-php": "^3.339",
+                "doctrine/dbal": "^3.9 || ^4.0",
+                "influxdata/influxdb-client-php": "^3.9",
+                "influxdb/influxdb-php": "^1.15",
+                "open-telemetry/api": "^1.1",
+                "open-telemetry/sdk": "^1.2.4",
+                "phpunit/phpunit": "^13",
+                "promphp/prometheus_client_php": "^2.10",
+                "symfony/framework-bundle": "^6.4 || ^7.4 || ^8.0"
+            },
+            "suggest": {
+                "aws/aws-sdk-php": "For CloudWatch integration",
+                "doctrine/dbal": "For Doctrine DBAL integration",
+                "influxdata/influxdb-client-php": "For InfluxDB (v2+) integration",
+                "influxdb/influxdb-php": "For InfluxDB (v1) integration",
+                "open-telemetry/api": "For OpenTelemetry integration",
+                "promphp/prometheus_client_php": "For Prometheus integration",
+                "symfony/framework-bundle": "For Symfony integration"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Beberlei\\Metrics\\": "src/Metrics",
+                    "Beberlei\\Bundle\\MetricsBundle\\": "src/MetricsBundle"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Benjamin Eberlei",
+                    "email": "kontakt@beberlei.de",
+                    "role": "Project Founder"
+                },
+                {
+                    "name": "Grégoire Pineau",
+                    "email": "lyrixx@lyrixx.info",
+                    "role": "Lead Developer"
+                }
+            ],
+            "description": "Simple library to talk to metrics collector services.",
+            "keywords": [
+                "Metrics",
+                "logging"
+            ],
+            "support": {
+                "issues": "https://github.com/beberlei/metrics/issues",
+                "source": "https://github.com/beberlei/metrics/tree/v3.0.0"
+            },
+            "time": "2026-09-09T11:36:26+00:00"
+        },
         {
             "name": "brick/math",
             "version": "0.18.0",
@@ -9014,7 +9089,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.3"
+        "php": "^8.4"
     },
     "platform-dev": {},
     "plugin-api-version": "2.9.0"

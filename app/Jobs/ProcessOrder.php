@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Metrics\Metrics;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Redis;
@@ -14,12 +15,19 @@ class ProcessOrder implements ShouldQueue
 
     public function handle(): void
     {
+        $startedAt = hrtime(true);
+
         usleep($this->workMs * 1000);
 
         if ($this->shouldFail) {
+            Metrics::increment('orders.failed_total');
+
             throw new \RuntimeException("Order {$this->orderId}: upstream is down");
         }
 
         Redis::incr('demo:orders:processed');
+
+        Metrics::increment('orders.processed_total');
+        Metrics::timing('orders.job_duration_ms', (hrtime(true) - $startedAt) / 1e6);
     }
 }
