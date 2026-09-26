@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Metrics\Metrics;
+use Kevariable\Metrics\Facades\Metrics;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Redis;

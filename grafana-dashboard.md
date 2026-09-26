@@ -167,12 +167,12 @@ The PHP-FPM dashboard is organized into collapsible sections:
   - Hash table full restarts
   - Manual restarts
 
-#### 3. App Metrics (beberlei/metrics)
+#### 3. App Metrics (kevariable/laravel-metrics)
 
 Numbers the app counts itself, not the infrastructure. Details in [app-metrics.md](app-metrics.md).
 
 - **Orders Processed vs Failed / sec** - `rate(app_orders_processed_total[...])` against `rate(app_orders_failed_total[...])`. Dispatch with `fail=1` and the failed line takes over
-- **Order Job Duration (last, ms)** - `app_orders_job_duration_ms`, the duration of the last processed `ProcessOrder` job
+- **Order Job Duration (avg and p95, ms)** - from the `app_orders_job_duration_ms` histogram: `rate(_sum) / rate(_count)` for the average, `histogram_quantile(0.95, ...)` over `_bucket` for the p95
 
 ### Key Dashboard Variables
 - **Datasource** - Prometheus instance selector
