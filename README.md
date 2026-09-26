@@ -61,6 +61,8 @@ make up-exporter  # php-fpm metrics exporter
 - Grafana: http://localhost:3000 (view without login; admin is symfony/symfony)
 - Prometheus: http://localhost:9090
 - Raw metrics: :8080/metrics and :8081/metrics (FrankenPHP), :8088/fpm-status (FPM)
+- App metrics (orders processed/failed, via beberlei/metrics): :8088/metrics, see
+  **[app-metrics.md](app-metrics.md)**
 
 `make urls` prints every URL.
 
@@ -72,6 +74,7 @@ make up-exporter  # php-fpm metrics exporter
 - FrankenPHP classic: **[frankenphp.md](frankenphp.md)**
 - PHP-FPM pool sizing: **[fpm.md](fpm.md)**
 - Serializer choice for Redis and sessions: **[igbinary.md](igbinary.md)**
+- Business metrics from your own code (one API, any backend): **[app-metrics.md](app-metrics.md)**
 - SLA-driven queue worker autoscaling: **[queues.md](queues.md)** - try
   `make queue-autoscale`, `make queue-watch`, `make queue-burst`
 
